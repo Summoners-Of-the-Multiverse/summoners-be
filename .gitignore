@@ -1,0 +1,9 @@
+package-lock.json
+/node_modules
+.env
+
+// cause all are generated
+*.js
+
+.DS_Store
+.platforms
