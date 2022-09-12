@@ -13,25 +13,6 @@ export default [
     {
         id: 2,
         query: `
-            CREATE TABLE monsters (
-                id serial PRIMARY KEY, 
-                monster_base_metadata_id int not null, 
-                token_id varchar(50) not null, 
-                attack decimal(36,6) not null, 
-                defense decimal(36,6) not null, 
-                crit_chance decimal(6,3) not null default 0, 
-                stat_volatility decimal(36,6) not null default 0
-            );`,
-        rollback_query: `DROP TABLE monsters;`
-    },
-    {
-        id: 3,
-        query: `CREATE INDEX monsters_token_id_idx ON monsters (token_id);`,
-        rollback_query: `DROP INDEX monsters_token_id_idx;`
-    },
-    {
-        id: 4,
-        query: `
             CREATE TABLE monster_base_metadata (
                 id serial PRIMARY KEY, 
                 chain_id varchar(50) not null, 
@@ -41,7 +22,7 @@ export default [
         rollback_query: `DROP TABLE monster_base_metadata;`
     },
     {
-        id: 5,
+        id: 3,
         query: `
             CREATE TABLE monster_skills (
                 id serial PRIMARY KEY, 
@@ -57,7 +38,7 @@ export default [
         rollback_query: `DROP TABLE monster_skills;`
     },
     {
-        id: 6,
+        id: 4,
         query: `
             CREATE TABLE monster_skill_effects (
                 id serial PRIMARY KEY, 
@@ -65,6 +46,25 @@ export default [
                 effect_asset_url varchar(255)
             );`,
         rollback_query: `DROP TABLE monster_skill_effects;`
+    },
+    {
+        id: 5,
+        query: `
+            CREATE TABLE monsters (
+                id serial PRIMARY KEY, 
+                monster_base_metadata_id int not null, 
+                token_id varchar(50) not null, 
+                attack decimal(36,6) not null, 
+                defense decimal(36,6) not null, 
+                crit_chance decimal(6,3) not null default 0, 
+                stat_volatility decimal(36,6) not null default 0
+            );`,
+        rollback_query: `DROP TABLE monsters;`
+    },
+    {
+        id: 6,
+        query: `CREATE INDEX monsters_token_id_idx ON monsters (token_id);`,
+        rollback_query: `DROP INDEX monsters_token_id_idx;`
     },
     {
         id: 7,
