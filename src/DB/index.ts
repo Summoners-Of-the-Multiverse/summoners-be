@@ -1,6 +1,6 @@
 import migrations from './migrations.json';
 import { Client } from 'pg';
-import { DBConstructorParams, Migration } from './types';
+import { DBConstructorParams } from './types';
 import moment from 'moment';
 import { cloneObj } from '../utils';
 
