@@ -29,7 +29,6 @@ export default [
                 monster_base_metadata_id int not null, 
                 type_id int not null, 
                 effect_id int not null, 
-                movement_id int not null, 
                 name varchar(255) not null, 
                 accuracy decimal(6,3) not null default 50, 
                 cooldown decimal(5,2) not null, 
