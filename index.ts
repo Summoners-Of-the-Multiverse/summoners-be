@@ -25,3 +25,6 @@ app.get('/', function(req, res) {
     res.send('Hello World');
 });
 
+http.listen(port, () => {
+    console.log("I'm alive!");
+});
