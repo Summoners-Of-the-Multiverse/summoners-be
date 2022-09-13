@@ -1,6 +1,7 @@
 import { BSC, POLYGON } from '../ChainConfigs';
 import monsterFile from '../../assets/sprites/_monster_sprite_files.json';
 import effectFile from '../../assets/effects/_effect_files.json';
+import DB from '../DB';
 
 const getRandomChance = () => {
     return getRandomNumber(0, 100);
@@ -28,7 +29,16 @@ const getSeedQuery = (columns: string[], values: string[][], table: string, sche
     return `INSERT INTO ${schema}.${table} (${columnString}) VALUES ${valueString};`;
 }
 
-export const getMonsterBaseMetadataSeeds = () => {
+export const seedMonsterMetadata = async(db: DB) => {
+    let table = 'monster_base_metadata';
+    let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
+    let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
+
+    if(checkerRes && checkerRes[0].count > 0) {
+        console.log(`${table} already seeded! Skipping..`);
+        return;
+    }
+
     let columns = [
         'chain_id', 
         'element_type_id',
@@ -38,8 +48,8 @@ export const getMonsterBaseMetadataSeeds = () => {
         'shiny_chance', 
         'base_attack', 
         'max_attack', 
-        'base_defence', 
-        'max_defence', 
+        'base_defense', 
+        'max_defense', 
         'base_hp', 
         'max_hp', 
         'base_crit_chance', 
@@ -55,15 +65,15 @@ export const getMonsterBaseMetadataSeeds = () => {
         let elementId = getRandomNumber(1, 4, true);
         let name = monsterFile.file_names[i];
         name = name.replace(/_/g, " ").replace(".png", "");
-        
+
         let imageName = monsterFile.file_names[i];
         let imageFile = imageName.replace(".png", "_ori.png");
         let shinyImageFile = imageName.replace(".png", "_shiftA.png");
         let shinyChance = getRandomChance();
         let baseAttack = getRandomNumber(1, 5);
         let maxAttack = getRandomNumber(5, 20);
-        let baseDefence = getRandomNumber(1, 5);
-        let maxDefence = getRandomNumber(5, 20);
+        let baseDefense = getRandomNumber(1, 5);
+        let maxDefense = getRandomNumber(5, 20);
         let baseHp = getRandomNumber(1, 5);
         let maxHp = getRandomNumber(5, 20);
         let baseCritChance = getRandomNumber(1, 5);
@@ -80,8 +90,8 @@ export const getMonsterBaseMetadataSeeds = () => {
             shinyChance,
             baseAttack,
             maxAttack,
-            baseDefence,
-            maxDefence,
+            baseDefense,
+            maxDefense,
             baseHp,
             maxHp,
             baseCritChance,
@@ -91,11 +101,29 @@ export const getMonsterBaseMetadataSeeds = () => {
         ]);
     }
 
-    return getSeedQuery(columns, values, 'monster_base_metadata');
+    let query = getSeedQuery(columns, values, table);
+    try {
+        await db.executeQuery(query);
+        console.log(`Seeded ${table}`);
+        return true;
+    }
+
+    catch {
+        return false;
+    }
 }
 
-export const getMonsterSkillSeeds = () => {
-    let columns = ['element_type_id', 'effect_id', 'name', 'accuracy', 'cooldown', 'multiplier'];
+export const seedMonsterSKills = async(db: DB) => {
+    let table = 'monster_skills';
+    let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
+    let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
+
+    if(checkerRes && checkerRes[0].count > 0) {
+        console.log(`${table} already seeded! Skipping..`);
+        return;
+    }
+
+    let columns = ['element_type_id', 'effect_id', 'name', 'hits', 'accuracy', 'cooldown', 'multiplier'];
     let values: string[][] = [];
     let nEffects = effectFile.file_names.length;
 
@@ -103,18 +131,37 @@ export const getMonsterSkillSeeds = () => {
         let elementTypeId = getRandomNumber(1, 4, true); // type 1 - 4
         let effectId = i + 1; // reference current effect
 
-        let skillName = effectFile.file_names[i].replace(/-/g, " ").replace(/(.png)$/, "");
+        let skillName = effectFile.file_names[i].replace(/-/g, " ").replace(".gif", "");
+        let hits = getRandomNumber(1, 10, true);
         let accuracy = getRandomChance();
         let cooldown = getRandomNumber(1, 60, true);
         let multiplier = getRandomNumber(0.5, 10);
 
-        values.push([elementTypeId, effectId.toString(), skillName, accuracy, cooldown, multiplier]);
+        values.push([elementTypeId, effectId.toString(), skillName, hits, accuracy, cooldown, multiplier]);
     }
 
-    return getSeedQuery(columns, values, 'monster_skills');
+    let query = getSeedQuery(columns, values, table);
+    try {
+        await db.executeQuery(query);
+        console.log(`Seeded ${table}`);
+        return true;
+    }
+
+    catch {
+        return false;
+    }
 }
 
-export const getEffectSeeds = () => {
+export const seedEffects = async(db: DB) => {
+    let table = 'monster_skill_effects';
+    let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
+    let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
+
+    if(checkerRes && checkerRes[0].count > 0) {
+        console.log(`${table} already seeded! Skipping..`);
+        return;
+    }
+
     let effectColumns = ['asset_file'];
     let effectValues: string[][] = [];
     let nEffects = effectFile.file_names.length;
@@ -124,30 +171,102 @@ export const getEffectSeeds = () => {
         effectValues.push([assetFile]);
     }
 
-    return getSeedQuery(effectColumns, effectValues, 'monster_skill_effects');
+    let query = getSeedQuery(effectColumns, effectValues, table);
+    try {
+        await db.executeQuery(query);
+        console.log(`Seeded ${table}`);
+        return true;
+    }
+
+    catch {
+        return false;
+    }
 }
 
-export const getMonsterSeeds = () => {
-    let columns = ['monster_base_metadata_id', 'token_id', 'attack', 'defense', 'hp', 'crit_chance', 'crit_multiplier'];
+export const seedMonsters = async(db: DB) => {
+    let table = 'monsters';
+    let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
+    let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
+
+    if(checkerRes && checkerRes[0].count > 0) {
+        console.log(`${table} already seeded! Skipping..`);
+        return;
+    }
+
+    let columns = ['monster_base_metadata_id', 'token_id', 'attack', 'defense', 'hp', 'crit_chance', 'crit_multiplier', 'is_shiny'];
     let values: string[][] = [];
     let maxMonsterId = monsterFile.file_names.length;
 
     for(let i = 0; i < 100; i++) {
         let monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
-        let tokenId = i.toString();
+        let tokenId = (i + 1).toString();
         let attack = getRandomNumber(10, 20);
         let defense = getRandomNumber(1, 10);
         let hp = getRandomNumber(100, 200);
         let crit_chance = getRandomChance();
         let crit_multiplier = getRandomNumber(1, 5);
+        let isShiny = getRandomNumber(0, 1, true) == '1'? 'true' : 'false';
 
-        values.push([monsterBaseMetadataId, tokenId, attack, defense, hp, crit_chance, crit_multiplier]);
+        values.push([monsterBaseMetadataId, tokenId, attack, defense, hp, crit_chance, crit_multiplier, isShiny]);
     }
 
-    return getSeedQuery(columns, values, 'monsters');
+    let query = getSeedQuery(columns, values, table);
+    try {
+        await db.executeQuery(query);
+        console.log(`Seeded ${table}`);
+        return true;
+    }
+
+    catch {
+        return false;
+    }
 }
 
-export const getAreaSeeds = () => {
+export const seedMonsterEquippedSkills = async(db: DB) => {
+    let table = 'monster_equipped_skills';
+    let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
+    let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
+
+    if(checkerRes && checkerRes[0].count > 0) {
+        console.log(`${table} already seeded! Skipping..`);
+        return;
+    }
+
+    let columns = ['monster_id', 'monster_skill_id'];
+    let values: string[][] = [];
+    let nEffects = effectFile.file_names.length;
+
+    for(let i = 0; i < 100; i++) {
+        let monsterId = (i + 1).toString();
+
+        for(let j = 0; j < 4; j++) {
+            let skillId = getRandomNumber(1, nEffects, true);
+            values.push([monsterId, skillId]);
+        }
+    }
+
+    let query = getSeedQuery(columns, values, table);
+    try {
+        await db.executeQuery(query);
+        console.log(`Seeded ${table}`);
+        return true;
+    }
+
+    catch {
+        return false;
+    }
+}
+
+export const seedAreas = async(db: DB) => {
+    let table = 'areas';
+    let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
+    let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
+
+    if(checkerRes && checkerRes[0].count > 0) {
+        console.log(`${table} already seeded! Skipping..`);
+        return;
+    }
+
     let columns = ['name'];
     let values = [
         ['Novice Village'], 
@@ -160,10 +279,28 @@ export const getAreaSeeds = () => {
         ['Sky City'],
     ];
 
-    return getSeedQuery(columns, values, 'areas');
+    let query = getSeedQuery(columns, values, table);
+    try {
+        await db.executeQuery(query);
+        console.log(`Seeded ${table}`);
+        return true;
+    }
+
+    catch {
+        return false;
+    }
 }
 
-export const getAreaMonsterSeeds = () => {
+export const seedAreaMonsters = async(db: DB) => {
+    let table = 'area_monsters';
+    let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
+    let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
+
+    if(checkerRes && checkerRes[0].count > 0) {
+        console.log(`${table} already seeded! Skipping..`);
+        return;
+    }
+
     let columns = ['monster_base_metadata_id', 'area_id', 'stat_modifier'];
     let values: string[][] = [];
     let maxMonsterId = monsterFile.file_names.length;
@@ -190,10 +327,28 @@ export const getAreaMonsterSeeds = () => {
     }
 
 
-    return getSeedQuery(columns, values, 'area_monsters');
+    let query = getSeedQuery(columns, values, table);
+    try {
+        await db.executeQuery(query);
+        console.log(`Seeded ${table}`);
+        return true;
+    }
+
+    catch {
+        return false;
+    }
 }
 
-export const getElementMultiplierSeeds = () => {
+export const seedElementMultiplier = async(db: DB) => {
+    let table = 'element_multipliers';
+    let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
+    let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
+
+    if(checkerRes && checkerRes[0].count > 0) {
+        console.log(`${table} already seeded! Skipping..`);
+        return;
+    }
+
     let columns = ['element_type_id', 'against_element_type_id', 'multiplier'];
     let values = [
         ['1', '1', '0.5'], 
@@ -217,10 +372,28 @@ export const getElementMultiplierSeeds = () => {
         ['4', '4', '1'], 
     ];
 
-    return getSeedQuery(columns, values, 'element_multipliers');
+    let query = getSeedQuery(columns, values, table);
+    try {
+        await db.executeQuery(query);
+        console.log(`Seeded ${table}`);
+        return true;
+    }
+
+    catch {
+        return false;
+    }
 }
 
-export const getElementSeeds = () => {
+export const seedElements = async(db: DB) => {
+    let table = 'elements';
+    let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
+    let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
+
+    if(checkerRes && checkerRes[0].count > 0) {
+        console.log(`${table} already seeded! Skipping..`);
+        return;
+    }
+
     let columns = ['name', 'icon_file'];
     let values = [
         ['Grass', ''], 
@@ -229,5 +402,14 @@ export const getElementSeeds = () => {
         ['Chaos', ''], 
     ];
 
-    return getSeedQuery(columns, values, 'elements');
+    let query = getSeedQuery(columns, values, table);
+    try {
+        await db.executeQuery(query);
+        console.log(`Seeded ${table}`);
+        return true;
+    }
+
+    catch {
+        return false;
+    }
 }

@@ -21,16 +21,16 @@ export default [
                 img_file text not null,
                 shiny_img_file text not null,
                 shiny_chance decimal(6,3) not null default 0.1 check (shiny_chance >= 0),
-                base_attack decimal(36,6) not null default 0,
-                max_attack decimal(36,6) not null default 0,
-                base_defence decimal(36,6) not null default 0,
-                max_defence decimal(36,6) not null default 0,
-                base_hp decimal(36,6) not null default 0,
-                max_hp decimal(36,6) not null default 0,
-                base_crit_chance decimal(36,6) not null default 0,
-                max_crit_chance decimal(36,6) not null default 0,
-                base_crit_multiplier decimal(36,6) not null default 0,
-                max_crit_multiplier decimal(36,6) not null default 0
+                base_attack decimal(36,0) not null default 0,
+                max_attack decimal(36,0) not null default 0,
+                base_defense decimal(36,0) not null default 0,
+                max_defense decimal(36,0) not null default 0,
+                base_hp decimal(36,0) not null default 0,
+                max_hp decimal(36,0) not null default 0,
+                base_crit_chance decimal(5,2) not null default 0,
+                max_crit_chance decimal(5,2) not null default 0,
+                base_crit_multiplier decimal(10,2) not null default 0,
+                max_crit_multiplier decimal(10,2) not null default 0
             );`,
         rollback_query: `DROP TABLE monster_base_metadata;`
     },
@@ -42,9 +42,10 @@ export default [
                 element_type_id int not null, 
                 effect_id int not null, 
                 name varchar(255) not null, 
+                hits int not null default 1 check(hits >= 1),
                 accuracy decimal(6,3) not null default 95 check(accuracy >= 0), 
                 cooldown decimal(5,2) not null default 5 check(cooldown >= 0), 
-                multiplier decimal(5,2) not null default 1 check(multiplier >= 0)
+                multiplier decimal(10,2) not null default 1 check(multiplier >= 0)
             );`,
         rollback_query: `DROP TABLE monster_skills;`
     },
@@ -74,11 +75,12 @@ export default [
                 id serial PRIMARY KEY, 
                 monster_base_metadata_id int not null, 
                 token_id varchar(50) not null, 
-                attack decimal(36,6) not null check (attack >= 0), 
-                defense decimal(36,6) not null check (defense >= 0), 
-                hp decimal(36,6) not null check (hp >= 0), 
+                attack decimal(36,0) not null check (attack >= 0), 
+                defense decimal(36,0) not null check (defense >= 0), 
+                hp decimal(36,0) not null check (hp >= 0), 
                 crit_chance decimal(6,3) not null default 0 check (crit_chance >= 0),
-                crit_multiplier decimal(6,3) not null default 0 check (crit_multiplier >= 1)
+                crit_multiplier decimal(10,2) not null default 0 check (crit_multiplier >= 1),
+                is_shiny boolean not null default false
             );`,
         rollback_query: `DROP TABLE monsters;`
     },
@@ -134,5 +136,20 @@ export default [
         id: 12,
         query: `CREATE INDEX player_monsters_address_idx ON player_monsters (address);`,
         rollback_query: `DROP INDEX player_monsters_address_idx;`
+    },
+    {
+        id: 13,
+        query: `
+            CREATE TABLE monster_equipped_skills (
+                id serial PRIMARY KEY, 
+                monster_id int not null,
+                monster_skill_id int not null
+            );`,
+        rollback_query: `DROP TABLE monster_equipped_skills;`
+    },
+    {
+        id: 14,
+        query: `CREATE INDEX monster_equipped_skills_monster_idx ON player_monsters (monster_id);`,
+        rollback_query: `DROP INDEX monster_equipped_skills_monster_idx;`
     },
 ]
