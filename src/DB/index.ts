@@ -22,8 +22,7 @@ export default class DB {
     migrate = async(isInit = false) => {
         let now = moment().format('YYYY-MM-DD HH:mm:ss');
         let groupQuery = `
-            SELECT migration_id, migration_group FROM migrations
-            WHERE migration_group = (SELECT migration_group FROM migrations ORDER BY id DESC LIMIT 1);
+            SELECT migration_id, migration_group FROM migrations ORDER BY migration_group DESC;
         `;
         let groupRes = await this.executeQueryForResults<{ migration_id: number, migration_group: number }>(groupQuery);
 
@@ -37,6 +36,11 @@ export default class DB {
         let migrationGroup = groupRes && groupRes.length > 0? groupRes[0].migration_group + 1: 1;
         let previousMigrationIds = groupRes? groupRes.map(x => x.migration_id) : [];
         let filteredMigrations = migrations.filter(x => !previousMigrationIds.includes(x.id));
+
+        if(filteredMigrations.length == 0) {
+            console.error('Nothing to migrate..');
+            return;
+        }
 
         for(let migration of filteredMigrations) {
             let res = await this.executeQuery(migration.query);

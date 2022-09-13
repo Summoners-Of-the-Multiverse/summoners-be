@@ -18,4 +18,9 @@ let db = new DB({
     database: DB_NAME,
 });
 
-db.rollback().then(() => console.log('Rollback Ended, press Ctrl + C to exit!'));
+db
+  .rollback()
+  .then(() => {
+    console.log('Rollback Ended, press Ctrl + C to exit!')
+    return;
+  });

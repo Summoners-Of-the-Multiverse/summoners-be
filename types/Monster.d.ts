@@ -8,7 +8,7 @@ export type Monster = {
     stat_volatility: number;
 }
 
-export type MonsterBaseMetaData = {
+export type MonsterBaseMetadata = {
     id: number;
     chain_id: string; 
     name: string;
@@ -20,7 +20,6 @@ export type MonsterSkill = {
     monster_base_metadata_id: number;
     type_id: number;
     effect_id: number;
-    movement_id: number;
     name: string;
     accuracy: number;
     cooldown: number;
@@ -31,6 +30,19 @@ export type MonsterSkillEffect = {
     id: number;
     name: string;
     effect_asset_url: string;
+}
+
+export type MonsterSkillEffectType = {
+    id: number;
+    name: string;
+    icon_url: string;
+}
+
+export type ElementMultipler = {
+    id: number;
+    element_type_id: number;
+    against_element_type_id: number;
+    multiplier: number;
 }
 
 export type Area = {

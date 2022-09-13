@@ -18,4 +18,9 @@ let db = new DB({
     database: DB_NAME,
 });
 
-db.migrate().then(() => console.log('Migration Ended, press Ctrl + C to exit!'));
+db
+  .migrate()
+  .then(() => {
+    console.log('Migration Ended, press Ctrl + C to exit!')
+    return;
+  });
