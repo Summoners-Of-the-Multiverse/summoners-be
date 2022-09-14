@@ -1,3 +1,7 @@
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.join(__dirname, '.env')});
+
 /**
  * Returns the number with 'en' locale settings, ie 1,000
  * @param x number
@@ -74,4 +78,20 @@ export const randomColor = () => {
         return ( date.setHours( 0, 0, 0, 0 ) / 1000 ) - ( date.getTimezoneOffset() * 60 )
     }
     return null
+}
+
+export const getDbConfig = () => {
+    const DB_USER = process.env.DB_USER ?? "";
+    const DB_PASSWORD = process.env.DB_PASSWORD ?? "";
+    const DB_HOST = process.env.DB_HOST ?? "";
+    const DB_PORT = process.env.DB_PORT ?? "5432";
+    const DB_NAME = process.env.DB_NAME ?? "";
+
+    return {
+        user: DB_USER,
+        password: DB_PASSWORD,
+        host: DB_HOST,
+        port: parseInt(DB_PORT),
+        database: DB_NAME,
+    };
 }

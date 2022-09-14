@@ -3,6 +3,12 @@ import monsterFile from '../../assets/sprites/_monster_sprite_files.json';
 import effectFile from '../../assets/effects/_effect_files.json';
 import DB from '../DB';
 
+const SEED_MONSTER_COUNT = 100;
+const SEED_EQUIPPED_SKILL_COUNT = 4;
+const SEED_AREA_MONSTER_COUNT = 30;
+
+
+
 const getRandomChance = () => {
     return getRandomNumber(0, 100);
 }
@@ -29,7 +35,8 @@ const getSeedQuery = (columns: string[], values: string[][], table: string, sche
     return `INSERT INTO ${schema}.${table} (${columnString}) VALUES ${valueString};`;
 }
 
-export const seedMonsterMetadata = async(db: DB) => {
+export const seedMonsterMetadata = async() => {
+    let db = new DB();
     let table = 'monster_base_metadata';
     let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
     let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
@@ -113,7 +120,8 @@ export const seedMonsterMetadata = async(db: DB) => {
     }
 }
 
-export const seedMonsterSKills = async(db: DB) => {
+export const seedMonsterSKills = async() => {
+    let db = new DB();
     let table = 'monster_skills';
     let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
     let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
@@ -152,7 +160,8 @@ export const seedMonsterSKills = async(db: DB) => {
     }
 }
 
-export const seedEffects = async(db: DB) => {
+export const seedEffects = async() => {
+    let db = new DB();
     let table = 'monster_skill_effects';
     let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
     let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
@@ -183,7 +192,8 @@ export const seedEffects = async(db: DB) => {
     }
 }
 
-export const seedMonsters = async(db: DB) => {
+export const seedMonsters = async() => {
+    let db = new DB();
     let table = 'monsters';
     let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
     let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
@@ -197,7 +207,7 @@ export const seedMonsters = async(db: DB) => {
     let values: string[][] = [];
     let maxMonsterId = monsterFile.file_names.length;
 
-    for(let i = 0; i < 100; i++) {
+    for(let i = 0; i < SEED_MONSTER_COUNT; i++) {
         let monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
         let tokenId = (i + 1).toString();
         let attack = getRandomNumber(10, 20);
@@ -222,7 +232,8 @@ export const seedMonsters = async(db: DB) => {
     }
 }
 
-export const seedMonsterEquippedSkills = async(db: DB) => {
+export const seedMonsterEquippedSkills = async() => {
+    let db = new DB();
     let table = 'monster_equipped_skills';
     let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
     let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
@@ -236,11 +247,17 @@ export const seedMonsterEquippedSkills = async(db: DB) => {
     let values: string[][] = [];
     let nEffects = effectFile.file_names.length;
 
-    for(let i = 0; i < 100; i++) {
+    for(let i = 0; i < SEED_MONSTER_COUNT; i++) {
         let monsterId = (i + 1).toString();
+        let skills: string[] = [];
 
-        for(let j = 0; j < 4; j++) {
-            let skillId = getRandomNumber(1, nEffects, true);
+        for(let j = 0; j < SEED_EQUIPPED_SKILL_COUNT; j++) {
+            let skillId = "";
+
+            do {
+                skillId = getRandomNumber(1, nEffects, true);
+            } while(skills.includes(skillId));
+
             values.push([monsterId, skillId]);
         }
     }
@@ -257,7 +274,8 @@ export const seedMonsterEquippedSkills = async(db: DB) => {
     }
 }
 
-export const seedAreas = async(db: DB) => {
+export const seedAreas = async() => {
+    let db = new DB();
     let table = 'areas';
     let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
     let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
@@ -291,7 +309,8 @@ export const seedAreas = async(db: DB) => {
     }
 }
 
-export const seedAreaMonsters = async(db: DB) => {
+export const seedAreaMonsters = async() => {
+    let db = new DB();
     let table = 'area_monsters';
     let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
     let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
@@ -308,7 +327,7 @@ export const seedAreaMonsters = async(db: DB) => {
 
     let currentAreaMonsters: {[areaId: string] : string[]} = {};
 
-    for(let i = 0; i < 30; i++) {
+    for(let i = 0; i < SEED_AREA_MONSTER_COUNT; i++) {
         let monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
         let areaId = getRandomNumber(1, maxAreaId, true);
 
@@ -320,7 +339,7 @@ export const seedAreaMonsters = async(db: DB) => {
             monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
             areaId = getRandomNumber(1, maxAreaId, true);
         }
-
+        console.log(currentAreaMonsters);
         currentAreaMonsters[areaId].push(monsterBaseMetadataId);
         let statModifier = getRandomNumber(2, 4);
         values.push([monsterBaseMetadataId, areaId, statModifier]);
@@ -339,7 +358,8 @@ export const seedAreaMonsters = async(db: DB) => {
     }
 }
 
-export const seedElementMultiplier = async(db: DB) => {
+export const seedElementMultiplier = async() => {
+    let db = new DB();
     let table = 'element_multipliers';
     let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
     let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
@@ -384,7 +404,8 @@ export const seedElementMultiplier = async(db: DB) => {
     }
 }
 
-export const seedElements = async(db: DB) => {
+export const seedElements = async() => {
+    let db = new DB();
     let table = 'elements';
     let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
     let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);

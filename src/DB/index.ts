@@ -2,6 +2,7 @@ import migrations from './migrations';
 import { Client } from 'pg';
 import { DBConstructorParams } from './types';
 import moment from 'moment';
+import { getDbConfig } from '../../utils';
 
 export default class DB {
 
@@ -11,7 +12,8 @@ export default class DB {
     host: string;
     database: string;
 
-    constructor({ user, password, port, host, database }: DBConstructorParams) {
+    constructor() {
+        let { user, password, port, host, database } = getDbConfig();
         this.user = user;
         this.password = password;
         this.port = port;
