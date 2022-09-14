@@ -56,14 +56,14 @@ export default class Base {
         return this.skills;
     }
 
-    attack = async (targetDefense: number, targetElementId: number, skillId: string) => {
-        if(targetDefense >= this.stats.attack) {
+    attack = async (target: Base, skillId: string) => {
+        if(target.stats.defense >= this.stats.attack) {
             //no damage
             return 0;
         }
 
         let skill = this.skills[skillId];
-        let elementMultiplier = await this._getElementMultiplier(skill.element_id, targetElementId);
+        let elementMultiplier = await this._getElementMultiplier(skill.element_id, target.stats.element_id);
         let attacks: number [] = [];
 
         for(let i = 0; i < skill.hits; i++) {
@@ -77,9 +77,11 @@ export default class Base {
             }
             
             let critMultiplier = this._getCritMultiplier();
-            damage = (this.stats.attack - targetDefense) * critMultiplier * elementMultiplier;
+            damage = (this.stats.attack - target.stats.defense) * critMultiplier * elementMultiplier;
             attacks.push(damage);
-            console.log(`${this.stats.name} used ${skill.name} and dealt ${damage} damage!${ critMultiplier > 1? ' !!CRIT!!' : ''}`);
+            target.receiveDamage(damage);
+
+            console.log(`${this.stats.name} used ${skill.name} and dealt ${damage.toFixed(2)} damage!${ critMultiplier > 1? ' !!CRIT!!' : ''}`);
 
             let effectiveMessage = '';
             if(elementMultiplier > 1) {
@@ -93,6 +95,12 @@ export default class Base {
             if(effectiveMessage) {
                 console.log(effectiveMessage);
             }
+            console.log(`${target.stats.name} has ${target.stats.hp.toFixed(2)} hp left`);
+
+            if(target.isDead()) {
+                console.log(`${target.stats.name} died!`);
+                break;
+            }
             console.log('\n');
         }
 
@@ -103,6 +111,9 @@ export default class Base {
     //returns is dead
     receiveDamage = (incomingDamage: number) => {
         this.stats.hp = this.stats.hp - incomingDamage;
+    }
+
+    isDead = () => {
         return this.stats.hp <= 0;
     }
 }
