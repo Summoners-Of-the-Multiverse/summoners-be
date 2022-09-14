@@ -2,31 +2,60 @@ import { BSC, POLYGON } from '../ChainConfigs';
 import monsterFile from '../../assets/sprites/_monster_sprite_files.json';
 import effectFile from '../../assets/effects/_effect_files.json';
 import DB from '../DB';
+import { getRandomChance, getRandomNumber } from '../../utils';
 
 const SEED_MONSTER_COUNT = 100;
 const SEED_EQUIPPED_SKILL_COUNT = 4;
 const SEED_AREA_MONSTER_COUNT = 30;
 
+//monsters
+const MIN_ATTACK = 30;
+const MAX_BASE_ATTACK = 40;
+const MAX_ATTACK = 50;
+const MIN_DEFENSE = 1;
+const MAX_BASE_DEFENSE = 5;
+const MAX_DEFENSE = 10;
+const MIN_HP = 500;
+const MAX_BASE_HP = 750;
+const MAX_HP = 1000;
+const MIN_CRIT_CHANCE = 10;
+const MAX_BASE_CRIT_CHANCE = 30;
+const MAX_CRIT_CHANCE = 50;
+const MIN_CRIT_MULTIPLIER = 1.25;
+const MAX_BASE_CRIT_MULTIPLIER = 2;
+const MAX_CRIT_MULTIPLIER = 10;
 
+//skills
+const MIN_HITS = 1;
+const MAX_HITS = 10;
+const MIN_CD = 5;
+const MAX_CD = 60;
+const MIN_ACCURACY = 60;
+const MAX_ACCURACY = 100;
+const MIN_SKILL_MULTIPLIER = 0.25;
+const MAX_SKILL_MULTIPLIER = 5;
 
-const getRandomChance = () => {
-    return getRandomNumber(0, 100);
-}
-
-const getRandomNumber = (min: number, max: number, isInteger = false) => {
-    let rand = min + (Math.random() * (max - min));
-    if(isInteger) {
-        rand = Math.round(rand);
-    }
-    return rand.toString();
-}
-
-const getSeedQuery = (columns: string[], values: string[][], table: string, schema: string = "public") => {
+const getSeedQuery = (columns: string[], values: any[][], table: string, schema: string = "public") => {
     let columnString = columns.join(",");
     let valueString = "";
 
     for(let value of values) {
-        valueString +=  "('" + value.join("','") + "'),";
+        valueString +=  "(";
+        for(let content of value) {
+            if(typeof content === "string") {
+                valueString += `'${content}'`;
+
+            }
+
+            else {
+                valueString += `${content}`;
+            }
+
+            valueString += ",";
+        }
+        //remove last comma
+        valueString = valueString.substring(0, valueString.length - 1);
+        valueString += "),";
     }
 
     //remove last comma
@@ -48,7 +77,7 @@ export const seedMonsterMetadata = async() => {
 
     let columns = [
         'chain_id', 
-        'element_type_id',
+        'element_id',
         'name', 
         'img_file', 
         'shiny_img_file', 
@@ -64,7 +93,7 @@ export const seedMonsterMetadata = async() => {
         'base_crit_multiplier', 
         'max_crit_multiplier',
     ];
-    let values: string[][] = [];
+    let values: any[][] = [];
     let nMonsters = monsterFile.file_names.length;
 
     for(let i = 0; i < nMonsters; i++) {
@@ -77,16 +106,16 @@ export const seedMonsterMetadata = async() => {
         let imageFile = imageName.replace(".png", "_ori.png");
         let shinyImageFile = imageName.replace(".png", "_shiftA.png");
         let shinyChance = getRandomChance();
-        let baseAttack = getRandomNumber(1, 5);
-        let maxAttack = getRandomNumber(5, 20);
-        let baseDefense = getRandomNumber(1, 5);
-        let maxDefense = getRandomNumber(5, 20);
-        let baseHp = getRandomNumber(1, 5);
-        let maxHp = getRandomNumber(5, 20);
-        let baseCritChance = getRandomNumber(1, 5);
-        let maxCritChance = getRandomNumber(5, 20);
-        let baseCritMultiplier = getRandomNumber(1, 1.1);
-        let maxCritMultiplier = getRandomNumber(1.1, 5);
+        let baseAttack = getRandomNumber(MIN_ATTACK, MAX_BASE_ATTACK);
+        let maxAttack = getRandomNumber(MAX_BASE_ATTACK, MAX_ATTACK);
+        let baseDefense = getRandomNumber(MIN_DEFENSE, MAX_BASE_DEFENSE);
+        let maxDefense = getRandomNumber(MAX_BASE_DEFENSE, MAX_DEFENSE);
+        let baseHp = getRandomNumber(MIN_HP, MAX_BASE_HP);
+        let maxHp = getRandomNumber(MAX_BASE_HP, MAX_HP);
+        let baseCritChance = getRandomNumber(MIN_CRIT_CHANCE, MAX_BASE_CRIT_CHANCE);
+        let maxCritChance = getRandomNumber(MAX_BASE_CRIT_CHANCE, MAX_CRIT_CHANCE);
+        let baseCritMultiplier = getRandomNumber(MIN_CRIT_MULTIPLIER, MAX_BASE_CRIT_MULTIPLIER);
+        let maxCritMultiplier = getRandomNumber(MAX_BASE_CRIT_MULTIPLIER, MAX_CRIT_MULTIPLIER);
 
         values.push([
             chainId, 
@@ -115,12 +144,13 @@ export const seedMonsterMetadata = async() => {
         return true;
     }
 
-    catch {
+    catch (e){
+        console.log(e);
         return false;
     }
 }
 
-export const seedMonsterSKills = async() => {
+export const seedMonsterSkills = async() => {
     let db = new DB();
     let table = 'monster_skills';
     let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
@@ -131,8 +161,8 @@ export const seedMonsterSKills = async() => {
         return;
     }
 
-    let columns = ['element_type_id', 'effect_id', 'name', 'hits', 'accuracy', 'cooldown', 'multiplier'];
-    let values: string[][] = [];
+    let columns = ['element_id', 'effect_id', 'name', 'hits', 'accuracy', 'cooldown', 'multiplier'];
+    let values: any[][] = [];
     let nEffects = effectFile.file_names.length;
 
     for(let i = 0; i < nEffects; i++) {
@@ -140,10 +170,10 @@ export const seedMonsterSKills = async() => {
         let effectId = i + 1; // reference current effect
 
         let skillName = effectFile.file_names[i].replace(/-/g, " ").replace(".gif", "");
-        let hits = getRandomNumber(1, 10, true);
-        let accuracy = getRandomChance();
-        let cooldown = getRandomNumber(1, 60, true);
-        let multiplier = getRandomNumber(0.5, 10);
+        let hits = getRandomNumber(MIN_HITS, MAX_HITS, true);
+        let accuracy = getRandomNumber(MIN_ACCURACY, MAX_ACCURACY, true);
+        let cooldown = getRandomNumber(MIN_CD, MAX_CD, true);
+        let multiplier = getRandomNumber(MIN_SKILL_MULTIPLIER, MAX_SKILL_MULTIPLIER);
 
         values.push([elementTypeId, effectId.toString(), skillName, hits, accuracy, cooldown, multiplier]);
     }
@@ -155,7 +185,8 @@ export const seedMonsterSKills = async() => {
         return true;
     }
 
-    catch {
+    catch (e){
+        console.log(e);
         return false;
     }
 }
@@ -172,7 +203,7 @@ export const seedEffects = async() => {
     }
 
     let effectColumns = ['asset_file'];
-    let effectValues: string[][] = [];
+    let effectValues: any[][] = [];
     let nEffects = effectFile.file_names.length;
 
     for(let i = 0; i < nEffects; i++) {
@@ -204,18 +235,18 @@ export const seedMonsters = async() => {
     }
 
     let columns = ['monster_base_metadata_id', 'token_id', 'attack', 'defense', 'hp', 'crit_chance', 'crit_multiplier', 'is_shiny'];
-    let values: string[][] = [];
+    let values: any[][] = [];
     let maxMonsterId = monsterFile.file_names.length;
 
     for(let i = 0; i < SEED_MONSTER_COUNT; i++) {
         let monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
         let tokenId = (i + 1).toString();
-        let attack = getRandomNumber(10, 20);
-        let defense = getRandomNumber(1, 10);
-        let hp = getRandomNumber(100, 200);
-        let crit_chance = getRandomChance();
-        let crit_multiplier = getRandomNumber(1, 5);
-        let isShiny = getRandomNumber(0, 1, true) == '1'? 'true' : 'false';
+        let attack = getRandomNumber(MIN_ATTACK, MAX_ATTACK);
+        let defense = getRandomNumber(MIN_DEFENSE, MAX_DEFENSE);
+        let hp = getRandomNumber(MIN_HP, MAX_HP);
+        let crit_chance = getRandomNumber(MIN_CRIT_CHANCE, MAX_CRIT_CHANCE);
+        let crit_multiplier = getRandomNumber(MIN_CRIT_MULTIPLIER, MAX_CRIT_MULTIPLIER);
+        let isShiny = getRandomNumber(0, 1, true) === 1? 'true' : 'false';
 
         values.push([monsterBaseMetadataId, tokenId, attack, defense, hp, crit_chance, crit_multiplier, isShiny]);
     }
@@ -244,15 +275,15 @@ export const seedMonsterEquippedSkills = async() => {
     }
 
     let columns = ['monster_id', 'monster_skill_id'];
-    let values: string[][] = [];
+    let values: any[][] = [];
     let nEffects = effectFile.file_names.length;
 
     for(let i = 0; i < SEED_MONSTER_COUNT; i++) {
         let monsterId = (i + 1).toString();
-        let skills: string[] = [];
+        let skills: number[] = [];
 
         for(let j = 0; j < SEED_EQUIPPED_SKILL_COUNT; j++) {
-            let skillId = "";
+            let skillId = 0;
 
             do {
                 skillId = getRandomNumber(1, nEffects, true);
@@ -321,11 +352,11 @@ export const seedAreaMonsters = async() => {
     }
 
     let columns = ['monster_base_metadata_id', 'area_id', 'stat_modifier'];
-    let values: string[][] = [];
+    let values: any[][] = [];
     let maxMonsterId = monsterFile.file_names.length;
     let maxAreaId = 2;
 
-    let currentAreaMonsters: {[areaId: string] : string[]} = {};
+    let currentAreaMonsters: {[areaId: string] : number[]} = {};
 
     for(let i = 0; i < SEED_AREA_MONSTER_COUNT; i++) {
         let monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
@@ -339,6 +370,7 @@ export const seedAreaMonsters = async() => {
             monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
             areaId = getRandomNumber(1, maxAreaId, true);
         }
+        
         console.log(currentAreaMonsters);
         currentAreaMonsters[areaId].push(monsterBaseMetadataId);
         let statModifier = getRandomNumber(2, 4);
@@ -369,7 +401,7 @@ export const seedElementMultiplier = async() => {
         return;
     }
 
-    let columns = ['element_type_id', 'against_element_type_id', 'multiplier'];
+    let columns = ['element_id', 'target_element_id', 'multiplier'];
     let values = [
         ['1', '1', '0.5'], 
         ['1', '2', '0.25'], 

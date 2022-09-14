@@ -16,21 +16,21 @@ export default [
             CREATE TABLE monster_base_metadata (
                 id serial PRIMARY KEY, 
                 chain_id varchar(50) not null, 
-                element_type_id int not null,
+                element_id int not null,
                 name text not null, 
                 img_file text not null,
                 shiny_img_file text not null,
-                shiny_chance decimal(6,3) not null default 0.1 check (shiny_chance >= 0),
-                base_attack decimal(36,0) not null default 0,
-                max_attack decimal(36,0) not null default 0,
-                base_defense decimal(36,0) not null default 0,
-                max_defense decimal(36,0) not null default 0,
-                base_hp decimal(36,0) not null default 0,
-                max_hp decimal(36,0) not null default 0,
-                base_crit_chance decimal(5,2) not null default 0,
-                max_crit_chance decimal(5,2) not null default 0,
-                base_crit_multiplier decimal(10,2) not null default 0,
-                max_crit_multiplier decimal(10,2) not null default 0
+                shiny_chance real not null default 0.1 check (shiny_chance >= 0),
+                base_attack bigint not null default 0,
+                max_attack bigint not null default 0,
+                base_defense bigint not null default 0,
+                max_defense bigint not null default 0,
+                base_hp bigint not null default 0,
+                max_hp bigint not null default 0,
+                base_crit_chance real not null default 0,
+                max_crit_chance real not null default 0,
+                base_crit_multiplier real not null default 0,
+                max_crit_multiplier real not null default 0
             );`,
         rollback_query: `DROP TABLE monster_base_metadata;`
     },
@@ -39,13 +39,13 @@ export default [
         query: `
             CREATE TABLE monster_skills (
                 id serial PRIMARY KEY, 
-                element_type_id int not null, 
+                element_id int not null, 
                 effect_id int not null, 
                 name varchar(255) not null, 
                 hits int not null default 1 check(hits >= 1),
-                accuracy decimal(6,3) not null default 95 check(accuracy >= 0), 
-                cooldown decimal(5,2) not null default 5 check(cooldown >= 0), 
-                multiplier decimal(10,2) not null default 1 check(multiplier >= 0)
+                accuracy real not null default 95 check(accuracy >= 0), 
+                cooldown real not null default 5 check(cooldown >= 0), 
+                multiplier real not null default 1 check(multiplier >= 0)
             );`,
         rollback_query: `DROP TABLE monster_skills;`
     },
@@ -75,11 +75,11 @@ export default [
                 id serial PRIMARY KEY, 
                 monster_base_metadata_id int not null, 
                 token_id varchar(50) not null, 
-                attack decimal(36,0) not null check (attack >= 0), 
-                defense decimal(36,0) not null check (defense >= 0), 
-                hp decimal(36,0) not null check (hp >= 0), 
-                crit_chance decimal(6,3) not null default 0 check (crit_chance >= 0),
-                crit_multiplier decimal(10,2) not null default 0 check (crit_multiplier >= 1),
+                attack bigint not null check (attack >= 0), 
+                defense bigint not null check (defense >= 0), 
+                hp bigint not null check (hp >= 0), 
+                crit_chance real not null default 0 check (crit_chance >= 0),
+                crit_multiplier real not null default 0 check (crit_multiplier >= 1),
                 is_shiny boolean not null default false
             );`,
         rollback_query: `DROP TABLE monsters;`
@@ -105,7 +105,7 @@ export default [
                 id serial PRIMARY KEY, 
                 monster_base_metadata_id int not null, 
                 area_id int not null,
-                stat_modifier decimal(18,3) not null default 1
+                stat_modifier real not null default 1
             );`,
         rollback_query: `DROP TABLE area_monsters;`
     },
@@ -114,9 +114,9 @@ export default [
         query: `
             CREATE TABLE element_multipliers (
                 id serial PRIMARY KEY, 
-                element_type_id int not null, 
-                against_element_type_id int not null,
-                multiplier decimal(18,3) not null default 1
+                element_id int not null, 
+                target_element_id int not null,
+                multiplier real not null default 1
             );`,
         rollback_query: `DROP TABLE element_multipliers;`
     },

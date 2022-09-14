@@ -1,6 +1,5 @@
 import migrations from './migrations';
 import { Client } from 'pg';
-import { DBConstructorParams } from './types';
 import moment from 'moment';
 import { getDbConfig } from '../../utils';
 
@@ -159,5 +158,13 @@ export default class DB {
         catch (e){
             return undefined;
         }
+    }
+
+    executeQueryForSingleResult = async<T = any>(query: string): Promise<T | undefined> => {
+        let rows = await this.executeQueryForResults<T>(query);
+        if(!rows || rows.length == 0) {
+            return undefined;
+        }
+        return rows[0];
     }
 }

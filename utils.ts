@@ -2,6 +2,14 @@ import dotenv from 'dotenv';
 import path from 'path';
 dotenv.config({ path: path.join(__dirname, '.env')});
 
+export function sleep(ms: number) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(true);
+        }, ms);
+    });
+}
+
 /**
  * Returns the number with 'en' locale settings, ie 1,000
  * @param x number
@@ -59,13 +67,39 @@ export const cloneObj = (obj: {[key: string]: any}) => {
 /**
  * @returns string
  */
-export const randomColor = () => {
+export const getRandomColor = () => {
     var letters = '0123456789ABCDEF'.split('');
     var color = '#';
     for (var i = 0; i < 6; i++ ) {
         color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
+}
+
+export const getRandomNumber = (min: number, max: number, isInteger = false) => {
+    let rand = min + (Math.random() * (max - min));
+    if(isInteger) {
+        rand = Math.round(rand);
+    }
+
+    else {
+        // to 3 decimals
+        rand = Math.floor(rand * 1000) / 1000;
+    }
+
+    return rand;
+}
+
+export const getRandomChance = () => {
+    return getRandomNumber(0, 100);
+}
+
+export const getRandomNumberAsString = (min: number, max: number, isInteger = false) => {
+    return getRandomNumber(min, max, isInteger).toString();
+}
+
+export const getRandomChanceAsString = () => {
+    return getRandomNumberAsString(0, 100);
 }
 
 /**

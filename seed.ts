@@ -1,8 +1,8 @@
-import { seedAreaMonsters, seedAreas, seedEffects, seedElementMultiplier, seedElements, seedMonsterMetadata, seedMonsterEquippedSkills, seedMonsters, seedMonsterSKills } from './src/Seeders';
+import { seedAreaMonsters, seedAreas, seedEffects, seedElementMultiplier, seedElements, seedMonsterMetadata, seedMonsterEquippedSkills, seedMonsters, seedMonsterSkills } from './src/Seeders';
 
 (async() => {
     await seedMonsterMetadata();
-    await seedMonsterSKills();
+    await seedMonsterSkills();
     await seedEffects();
     await seedMonsters();
     await seedAreas();
