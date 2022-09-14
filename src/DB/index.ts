@@ -1,7 +1,12 @@
 import migrations from './migrations';
-import { Client } from 'pg';
+import pg, { Client } from 'pg';
 import moment from 'moment';
 import { getDbConfig } from '../../utils';
+
+/** Fix big int returning as string */
+const parseBigIntArray = pg.types.getTypeParser(1016);
+pg.types.setTypeParser(20, BigInt); // Type Id 20 = BIGINT | BIGSERIAL
+pg.types.setTypeParser(1016, a => parseBigIntArray(a).map(BigInt));
 
 export default class DB {
 
