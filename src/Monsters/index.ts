@@ -44,10 +44,10 @@ const getPlayerMonsters = async(address: string, chainId: string) => {
 
     //only 4
     let monsterIds = await db.executeQueryForResults<{ monster_id: number }>(`
-        SELECT DISTINCT 
+        SELECT 
             monster_id
         FROM player_monsters pm
-        WHERE address = ${address} AND chain_id = '${chainId}'
+        WHERE LOWER(address) = LOWER('${address}') AND LOWER(chain_id) = LOWER('${chainId}')
         LIMIT 4;
     `);
 
