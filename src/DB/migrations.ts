@@ -152,4 +152,80 @@ export default [
         query: `CREATE INDEX monster_equipped_skills_monster_idx ON player_monsters (monster_id);`,
         rollback_query: `DROP INDEX monster_equipped_skills_monster_idx;`
     },
+    {
+        id: 15,
+        query: `
+            CREATE TABLE pve_battles (
+                id serial PRIMARY KEY, 
+                address varchar(50) not null,
+                status smallint not null default 0,
+                time_start timestamp not null,
+                time_end timestamp
+            );`,
+        rollback_query: `DROP TABLE pve_battles;`
+    },
+    {
+        id: 16,
+        query: `CREATE INDEX pve_battles_address_idx ON pve_battles (address);`,
+        rollback_query: `DROP INDEX pve_battles_address_idx;`
+    },
+    {
+        id: 17,
+        query: `
+            CREATE TABLE pve_battle_monsters (
+                id serial PRIMARY KEY, 
+                pve_battle_id int not null,
+                monster_base_metadata_id int not null,
+                attack real not null,
+                defense real not null,
+                hp real not null,
+                hp_left real not null,
+                crit_chance real not null,
+                crit_multiplier real not null,
+                is_shiny boolean not null,
+                is_captured boolean not null default false
+            );`,
+        rollback_query: `DROP TABLE pve_battle_monsters;`
+    },
+    {
+        id: 18,
+        query: `
+            CREATE INDEX pve_battle_monsters_pve_battle_id_idx ON pve_battle_monsters (pve_battle_id);
+            CREATE INDEX pve_battle_monsters_monster_base_metadata_id_idx ON pve_battle_monsters (monster_base_metadata_id);
+            CREATE INDEX pve_battle_monsters_is_captured_idx ON pve_battle_monsters (is_captured);
+        `,
+        rollback_query: `
+            DROP INDEX pve_battle_monsters_pve_battle_id_idx;
+            DROP INDEX pve_battle_monsters_monster_base_metadata_id_idx;
+            DROP INDEX pve_battle_monsters_is_captured_idx;
+        `
+    },
+    {
+        id: 19,
+        query: `
+            CREATE TABLE pve_battle_player_skills_used (
+                id serial PRIMARY KEY, 
+                pve_battle_id int not null,
+                skill_id int not null,
+                monster_id int not null,
+                total_damage_dealt real not null,
+                crit_damage_dealt real not null,
+                hits int not null,
+                misses int not null
+            );`,
+        rollback_query: `DROP TABLE pve_battle_player_skills_used;`
+    },
+    {
+        id: 20,
+        query: `
+            CREATE INDEX pve_battle_player_skills_used_pve_battle_id_idx ON pve_battle_player_skills_used (pve_battle_id);
+            CREATE INDEX pve_battle_player_skills_used_skill_id_idx ON pve_battle_player_skills_used (skill_id);
+            CREATE INDEX pve_battle_player_skills_used_monster_id_idx ON pve_battle_player_skills_used (monster_id);
+        `,
+        rollback_query: `
+            DROP INDEX pve_battle_player_skills_used_pve_battle_id_idx;
+            DROP INDEX pve_battle_player_skills_used_skill_id_idx;
+            DROP INDEX pve_battle_player_skills_used_monster_id_idx;
+        `
+    }
 ]
