@@ -1,10 +1,11 @@
 import { MonsterEquippedSkillById, MonsterStats } from "../../types/Monster";
 import { cloneObj, getRandomChance, getRandomNumber} from "../../utils";
 import DB from "../DB";
-import { bossMultiplier } from "./BossMonster";
 import PlayerMonster from "./PlayerMonster";
 import { Attack, AttackRes, BaseMonsterConstructor } from "./types";
-import { wildMultiplier } from "./WildMonster";
+
+export const bossMultiplier = 3;
+export const wildMultiplier = 1.5;
 
 export default class Base {
 

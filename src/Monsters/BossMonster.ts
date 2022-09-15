@@ -1,9 +1,7 @@
 import { MonsterBaseMetadata, MonsterEquippedSkill, MonsterEquippedSkillById, MonsterStats } from "../../types/Monster";
 import { getRandomChance, getRandomNumber } from "../../utils";
-import Base from "./Base";
+import Base, { bossMultiplier } from "./Base";
 import { MonsterConstructor } from "./types";
-
-export const bossMultiplier = 3;
 
 export default class BossMonster extends Base {
 
