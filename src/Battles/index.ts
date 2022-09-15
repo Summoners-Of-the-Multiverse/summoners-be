@@ -88,12 +88,14 @@ export class Battle {
         this.io.sockets.adapter.on('delete-room', async(room) => {
             console.log(room);
             if(room === this.room) {
+                console.log('destroying room');
                 /** log battle */
                 let columns = ['pve_battle_id', 'skill_id', 'monster_id', 'total_damage_dealt', 'crit_damage_dealt', 'hits', 'misses'];
                 let values: any[][] = [];
 
                 if(Object.keys(this.skillUsage).length === 0){
                     //no battle occured
+                    this.onPromptDelete();
                     return;
                 }
                 
@@ -109,13 +111,12 @@ export class Battle {
 
                 if(values.length === 0) {
                     //no battle occured
+                    this.onPromptDelete();
                     return;
                 }
 
                 let query = getInsertQuery(columns, values, 'pve_battle_skills_used');
                 await this.db.executeQuery(query);
-                this.onPromptDelete();
-                console.log('room destroyed');
             }
         });
     }
@@ -305,17 +306,20 @@ export class Battle {
         await this.db.executeQuery(query);
 
         let columns = ['pve_battle_id', 'type', 'monster_base_metadata_id', 'attack', 'defense', 'hp', 'hp_left', 'crit_chance', 'crit_multiplier', 'is_shiny', 'is_captured'];
+        
+        let stats = this.encounter!.getBaseStats();
+        
         let values: any[][] = [[
             this.battle_id,
             BATTLE_TYPE_WILD, // or boss
             this.encounter!.metadataId,
-            this.encounter!.stats.attack,
-            this.encounter!.stats.defense,
-            this.encounter!.stats.hp,
-            this.encounter!.stats.hp_left,
-            this.encounter!.stats.crit_chance,
-            this.encounter!.stats.crit_multiplier,
-            this.encounter!.stats.is_shiny,
+            stats.attack,
+            stats.defense,
+            stats.hp,
+            stats.hp_left,
+            stats.crit_chance,
+            stats.crit_multiplier,
+            stats.is_shiny,
             'false',
         ]];
         await this.db.executeQuery(getInsertQuery(columns, values, 'pve_battle_encounters'));

@@ -39,7 +39,10 @@ io.on('connection', (socket: Socket) => {
     socket.on('start_battle', (address: string) => {
         console.log('starting battle for ' + socket.id);
         let battle: Battle | null = null;
-        let onPromptDelete = () => { battle = null; };
+        let onPromptDelete = () => { 
+            battle = null; 
+            console.log('room destroyed'); 
+        };
         try {
             battle = new Battle({io, socket, address, areaId: 1, chainId: '0x89', type: "wild", onPromptDelete});
         }
