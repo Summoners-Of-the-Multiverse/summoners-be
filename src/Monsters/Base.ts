@@ -23,11 +23,13 @@ export default class Base {
     db = new DB();
 
     onReady: () => void = () => {};
+    onCooldown: () => void = () => {};
 
     isOnCooldown = false;
     
-    constructor({ onReady }: BaseMonsterConstructor) {
+    constructor({ onReady, onCooldown }: BaseMonsterConstructor) {
         this.onReady = onReady;
+        this.onCooldown = onCooldown;
     }
 
     _applyStats = async (stats: MonsterStats, skills: MonsterEquippedSkillById) => {
@@ -57,12 +59,23 @@ export default class Base {
     }
 
     attack = async (target: Base, skillId: string) => {
-        if(target.stats.defense >= this.stats.attack) {
-            //no damage
-            return 0;
+        if(this.isOnCooldown) {
+            return;
         }
 
         let skill = this.skills[skillId];
+        this.isOnCooldown = true;
+
+        setTimeout(() => {
+            this.isOnCooldown = false;
+            this.onCooldown();
+        }, skill.cooldown * 1000);
+
+        if(target.stats.defense >= this.stats.attack) {
+            //no damage
+            return;
+        }
+
         let elementMultiplier = await this._getElementMultiplier(skill.element_id, target.stats.element_id);
         let attacks: number [] = [];
 

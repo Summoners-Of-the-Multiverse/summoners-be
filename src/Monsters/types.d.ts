@@ -1,5 +1,6 @@
 export interface BaseMonsterConstructor {
     onReady: () => void; 
+    onCooldown: () => void;
 };
 
 export interface PlayerMonsterConstructor extends BaseMonsterConstructor {
