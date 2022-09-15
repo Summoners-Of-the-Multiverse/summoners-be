@@ -437,3 +437,44 @@ export const seedElements = async() => {
         return false;
     }
 }
+
+export const seedPlayerEquippedMonsters = async(addresses: string[]) => {
+    let db = new DB();
+    let table = 'player_monsters';
+    let checkerQuery = `SELECT COUNT(*) as count FROM ${table}`;
+    let checkerRes = await db.executeQueryForResults<{count: number}>(checkerQuery);
+
+    if(checkerRes && checkerRes[0].count > 0) {
+        console.log(`${table} already seeded! Skipping..`);
+        return;
+    }
+    let columns = ['address', 'monster_id', 'chain_id'];
+    let values: any[][] = [];
+    let chains = [BSC.id, POLYGON.id];
+
+    let monsterIds: number[] = [];
+
+    for(let address of addresses) {
+        for(let chain of chains) {
+            // 4 monsters for each chain for each address
+            for(let i = 0; i < 4; i++){
+                let monsterId = 0;
+                do {
+                    monsterId = getRandomNumber(1, 100, true);
+                } while(monsterIds.includes(monsterId));
+                values.push([address, monsterId, chain]);
+            }
+        }
+    }
+
+    let query = getInsertQuery(columns, values, table);
+    try {
+        await db.executeQuery(query);
+        console.log(`Seeded ${table}`);
+        return true;
+    }
+
+    catch {
+        return false;
+    }
+}
