@@ -2,7 +2,7 @@ import { BSC, POLYGON } from '../ChainConfigs';
 import monsterFile from '../../assets/sprites/_monster_sprite_files.json';
 import effectFile from '../../assets/effects/_effect_files.json';
 import DB from '../DB';
-import { getRandomChance, getRandomNumber } from '../../utils';
+import { getInsertQuery, getRandomChance, getRandomNumber } from '../../utils';
 
 const SEED_MONSTER_COUNT = 100;
 const SEED_EQUIPPED_SKILL_COUNT = 4;
@@ -34,35 +34,6 @@ const MIN_ACCURACY = 60;
 const MAX_ACCURACY = 100;
 const MIN_SKILL_MULTIPLIER = 0.25;
 const MAX_SKILL_MULTIPLIER = 5;
-
-const getSeedQuery = (columns: string[], values: any[][], table: string, schema: string = "public") => {
-    let columnString = columns.join(",");
-    let valueString = "";
-
-    for(let value of values) {
-        valueString +=  "(";
-        for(let content of value) {
-            if(typeof content === "string") {
-                valueString += `'${content}'`;
-
-            }
-
-            else {
-                valueString += `${content}`;
-            }
-
-            valueString += ",";
-        }
-        //remove last comma
-        valueString = valueString.substring(0, valueString.length - 1);
-        valueString += "),";
-    }
-
-    //remove last comma
-    valueString = valueString.substring(0, valueString.length - 1);
-
-    return `INSERT INTO ${schema}.${table} (${columnString}) VALUES ${valueString};`;
-}
 
 export const seedMonsterMetadata = async() => {
     let db = new DB();
@@ -137,7 +108,7 @@ export const seedMonsterMetadata = async() => {
         ]);
     }
 
-    let query = getSeedQuery(columns, values, table);
+    let query = getInsertQuery(columns, values, table);
     try {
         await db.executeQuery(query);
         console.log(`Seeded ${table}`);
@@ -178,7 +149,7 @@ export const seedMonsterSkills = async() => {
         values.push([elementTypeId, effectId.toString(), skillName, hits, accuracy, cooldown, multiplier]);
     }
 
-    let query = getSeedQuery(columns, values, table);
+    let query = getInsertQuery(columns, values, table);
     try {
         await db.executeQuery(query);
         console.log(`Seeded ${table}`);
@@ -211,7 +182,7 @@ export const seedEffects = async() => {
         effectValues.push([assetFile]);
     }
 
-    let query = getSeedQuery(effectColumns, effectValues, table);
+    let query = getInsertQuery(effectColumns, effectValues, table);
     try {
         await db.executeQuery(query);
         console.log(`Seeded ${table}`);
@@ -251,7 +222,7 @@ export const seedMonsters = async() => {
         values.push([monsterBaseMetadataId, tokenId, attack, defense, hp, crit_chance, crit_multiplier, isShiny]);
     }
 
-    let query = getSeedQuery(columns, values, table);
+    let query = getInsertQuery(columns, values, table);
     try {
         await db.executeQuery(query);
         console.log(`Seeded ${table}`);
@@ -293,7 +264,7 @@ export const seedMonsterEquippedSkills = async() => {
         }
     }
 
-    let query = getSeedQuery(columns, values, table);
+    let query = getInsertQuery(columns, values, table);
     try {
         await db.executeQuery(query);
         console.log(`Seeded ${table}`);
@@ -328,7 +299,7 @@ export const seedAreas = async() => {
         ['Sky City'],
     ];
 
-    let query = getSeedQuery(columns, values, table);
+    let query = getInsertQuery(columns, values, table);
     try {
         await db.executeQuery(query);
         console.log(`Seeded ${table}`);
@@ -378,7 +349,7 @@ export const seedAreaMonsters = async() => {
     }
 
 
-    let query = getSeedQuery(columns, values, table);
+    let query = getInsertQuery(columns, values, table);
     try {
         await db.executeQuery(query);
         console.log(`Seeded ${table}`);
@@ -424,7 +395,7 @@ export const seedElementMultiplier = async() => {
         ['4', '4', '1'], 
     ];
 
-    let query = getSeedQuery(columns, values, table);
+    let query = getInsertQuery(columns, values, table);
     try {
         await db.executeQuery(query);
         console.log(`Seeded ${table}`);
@@ -455,7 +426,7 @@ export const seedElements = async() => {
         ['Chaos', ''], 
     ];
 
-    let query = getSeedQuery(columns, values, table);
+    let query = getInsertQuery(columns, values, table);
     try {
         await db.executeQuery(query);
         console.log(`Seeded ${table}`);

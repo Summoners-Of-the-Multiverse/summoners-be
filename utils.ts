@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import moment from 'moment';
 import path from 'path';
 dotenv.config({ path: path.join(__dirname, '.env')});
 
@@ -102,16 +103,16 @@ export const getRandomChanceAsString = () => {
     return getRandomNumberAsString(0, 100);
 }
 
-/**
- * @param date
- */
- export const getUnifiedTime = ( date?: Date ) => {
-    
-    if ( date ) {
-        //current time offset by timezone offset in seconds
-        return ( date.setHours( 0, 0, 0, 0 ) / 1000 ) - ( date.getTimezoneOffset() * 60 )
-    }
-    return null
+export const getUTCMoment = () => {
+    return moment().utc();
+}
+
+export const getUTCDatetime = () => {
+    return getUTCMoment().format('YYYY-MM-DD HH:mm:ss');
+}
+
+export const getUTCDate = () => {
+    return getUTCMoment().format('YYYY-MM-DD');
 }
 
 export const getDbConfig = () => {
@@ -128,4 +129,38 @@ export const getDbConfig = () => {
         port: parseInt(DB_PORT),
         database: DB_NAME,
     };
+}
+
+export const getInsertQuery = (columns: string[], values: any[][], table: string, returnId: boolean = false, schema: string = "public") => {
+    let columnString = columns.join(",");
+    let valueString = "";
+
+    for(let value of values) {
+        valueString +=  "(";
+        for(let content of value) {
+            if(typeof content === "string") {
+                valueString += `'${content}'`;
+
+            }
+
+            else {
+                valueString += `${content}`;
+            }
+
+            valueString += ",";
+        }
+        //remove last comma
+        valueString = valueString.substring(0, valueString.length - 1);
+        valueString += "),";
+    }
+
+    //remove last comma
+    valueString = valueString.substring(0, valueString.length - 1);
+
+    let query = `INSERT INTO ${schema}.${table} (${columnString}) VALUES ${valueString}`;
+    if(returnId) {
+        query += ' RETURNING id';
+    }
+    query += ';';
+    return query;
 }

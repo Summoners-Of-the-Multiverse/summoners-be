@@ -1,7 +1,7 @@
 import migrations from './migrations';
 import pg, { Client } from 'pg';
 import moment from 'moment';
-import { getDbConfig } from '../../utils';
+import { getDbConfig, getUTCMoment } from '../../utils';
 
 /** Fix big int returning as string */
 const parseBigIntArray = pg.types.getTypeParser(1016);
@@ -26,7 +26,7 @@ export default class DB {
     }
 
     migrate = async(isInit = false) => {
-        let now = moment().format('YYYY-MM-DD HH:mm:ss');
+        let now = getUTCMoment();
         let groupQuery = `
             SELECT migration_id, migration_group FROM migrations ORDER BY migration_group DESC;
         `;
@@ -140,6 +140,7 @@ export default class DB {
         }
     
         catch (e){
+            console.log(e);
             return false;
         }
         return true;

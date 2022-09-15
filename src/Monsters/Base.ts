@@ -1,7 +1,8 @@
 import { MonsterEquippedSkillById, MonsterStats } from "../../types/Monster";
-import { getRandomChance} from "../../utils";
+import { getRandomChance, getRandomNumber} from "../../utils";
 import DB from "../DB";
-import { BaseMonsterConstructor } from "./types";
+import PlayerMonster from "./PlayerMonster";
+import { Attack, AttackRes, BaseMonsterConstructor } from "./types";
 
 export default class Base {
 
@@ -27,7 +28,7 @@ export default class Base {
 
     isOnCooldown = false;
     
-    constructor({ onReady, onCooldown }: BaseMonsterConstructor) {
+    constructor({ onLoad: onReady, onOffCooldown: onCooldown }: BaseMonsterConstructor) {
         this.onReady = onReady;
         this.onCooldown = onCooldown;
     }
@@ -46,6 +47,7 @@ export default class Base {
     }
 
     _getElementMultiplier = async(attackElementId: number, targetElementId: number) => {
+        // OPTIMIZATION: just query once
         let res = await this.db.executeQueryForSingleResult<{ multiplier: number }>(`SELECT multiplier FROM element_multipliers WHERE element_id = ${attackElementId} AND target_element_id = ${targetElementId};`);
         return res?.multiplier ?? 1;
     }
@@ -59,8 +61,9 @@ export default class Base {
     }
 
     attack = async (target: Base, skillId: string) => {
+        let noAttack: AttackRes = { attacks: [], totalDamage: 0, critDamage: 0, hits: 0, misses: 0 };
         if(this.isOnCooldown) {
-            return;
+            return noAttack;
         }
 
         let skill = this.skills[skillId];
@@ -71,13 +74,22 @@ export default class Base {
             this.onCooldown();
         }, skill.cooldown * 1000);
 
+        let attacks: Attack[] = [];
+        let hits: number = 0;
+        let misses: number = 0;
+        let totalDamage: number = 0;
+        let critDamage: number = 0;
+
         if(target.stats.defense >= this.stats.attack) {
             //no damage
-            return;
+            attacks.push({
+                damage: 0,
+                type: "immune",
+            });
+            return noAttack;
         }
 
         let elementMultiplier = await this._getElementMultiplier(skill.element_id, target.stats.element_id);
-        let attacks: number [] = [];
 
         for(let i = 0; i < skill.hits; i++) {
             let damage = 0;
@@ -85,16 +97,28 @@ export default class Base {
             if(!hit) {
                 console.log(`${this.stats.name} missed!`);
                 console.log('\n');
-                attacks.push(damage);
+                attacks.push({
+                    damage,
+                    type: "miss",
+                });
+                misses++;
                 continue;
             }
             
             let critMultiplier = this._getCritMultiplier();
+            let isCrit = critMultiplier > 1;
             damage = (this.stats.attack - target.stats.defense) * critMultiplier * elementMultiplier;
-            attacks.push(damage);
+            attacks.push({
+                damage,
+                type: isCrit? "crit" : "normal",
+            });
+            hits++;
+            totalDamage += damage;
+            critDamage += isCrit? damage : 0;
+
             target.receiveDamage(damage);
 
-            console.log(`${this.stats.name} used ${skill.name} and dealt ${damage.toFixed(2)} damage!${ critMultiplier > 1? ' !!CRIT!!' : ''}`);
+            console.log(`${this.stats.name} used ${skill.name} and dealt ${damage.toFixed(2)} damage!${ isCrit? ' !!CRIT!!' : ''}`);
 
             let effectiveMessage = '';
             if(elementMultiplier > 1) {
@@ -117,7 +141,21 @@ export default class Base {
             console.log('\n');
         }
 
-        return attacks;
+        return { attacks, totalDamage, critDamage, hits, misses } as AttackRes;
+    }
+
+    /**
+     * For PvE purposes
+     * @param playerMonsters array
+     */
+    attackPlayer = async(playerMonsters: PlayerMonster[]) => {
+        let skillIndex = getRandomNumber(1, Object.keys(this.skills).length - 1, true);
+        let playerMonsterIndex = getRandomNumber(1, playerMonsters.length - 1, true);
+        let target = playerMonsters[playerMonsterIndex];
+        let skillId = Object.keys(this.skills)[skillIndex];
+        
+        let attackRes: AttackRes = await this.attack(target, skillId);
+        return attackRes.totalDamage;
     }
 
     //mainly used for bosses and wild encounters

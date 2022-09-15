@@ -1,6 +1,6 @@
 export interface BaseMonsterConstructor {
-    onReady: () => void; 
-    onCooldown: () => void;
+    onLoad: () => void; 
+    onOffCooldown: () => void;
 };
 
 export interface PlayerMonsterConstructor extends BaseMonsterConstructor {
@@ -9,4 +9,17 @@ export interface PlayerMonsterConstructor extends BaseMonsterConstructor {
 
 export interface MonsterConstructor extends BaseMonsterConstructor {
     metadataId: number;
+}
+
+export type Attack = {
+    damage: number;
+    type: "normal" | "crit" | "immune" | "miss";
+}
+
+export type AttackRes = { 
+    attacks: Attack[];
+    totalDamage: number;
+    critDamage: number;
+    hits: number;
+    misses: number;
 }
