@@ -227,5 +227,10 @@ export default [
             DROP INDEX pve_battle_player_skills_used_skill_id_idx;
             DROP INDEX pve_battle_player_skills_used_monster_id_idx;
         `
-    }
+    },
+    {
+        id: 21,
+        query: `ALTER TABLE player_monsters ADD chain_id varchar(50) not null;`,
+        rollback_query: `ALTER TABLE player_monsters DROP COLUMN chain_id;`
+    },
 ]
