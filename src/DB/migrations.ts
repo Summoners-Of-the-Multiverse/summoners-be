@@ -172,8 +172,9 @@ export default [
     {
         id: 17,
         query: `
-            CREATE TABLE pve_battle_monsters (
+            CREATE TABLE pve_battle_encounters (
                 id serial PRIMARY KEY, 
+                type smallint not null,
                 pve_battle_id int not null,
                 monster_base_metadata_id int not null,
                 attack real not null,
@@ -185,19 +186,19 @@ export default [
                 is_shiny boolean not null,
                 is_captured boolean not null default false
             );`,
-        rollback_query: `DROP TABLE pve_battle_monsters;`
+        rollback_query: `DROP TABLE pve_battle_encounters;`
     },
     {
         id: 18,
         query: `
-            CREATE INDEX pve_battle_monsters_pve_battle_id_idx ON pve_battle_monsters (pve_battle_id);
-            CREATE INDEX pve_battle_monsters_monster_base_metadata_id_idx ON pve_battle_monsters (monster_base_metadata_id);
-            CREATE INDEX pve_battle_monsters_is_captured_idx ON pve_battle_monsters (is_captured);
+            CREATE INDEX pve_battle_encounters_pve_battle_id_idx ON pve_battle_encounters (pve_battle_id);
+            CREATE INDEX pve_battle_encounters_monster_base_metadata_id_idx ON pve_battle_encounters (monster_base_metadata_id);
+            CREATE INDEX pve_battle_encounters_is_captured_idx ON pve_battle_encounters (is_captured);
         `,
         rollback_query: `
-            DROP INDEX pve_battle_monsters_pve_battle_id_idx;
-            DROP INDEX pve_battle_monsters_monster_base_metadata_id_idx;
-            DROP INDEX pve_battle_monsters_is_captured_idx;
+            DROP INDEX pve_battle_encounters_pve_battle_id_idx;
+            DROP INDEX pve_battle_encounters_monster_base_metadata_id_idx;
+            DROP INDEX pve_battle_encounters_is_captured_idx;
         `
     },
     {
@@ -230,7 +231,7 @@ export default [
     },
     {
         id: 21,
-        query: `ALTER TABLE player_monsters ADD chain_id varchar(50) not null;`,
+        query: `ALTER TABLE player_monsters ADD chain_id varchar(50) not null default '';`,
         rollback_query: `ALTER TABLE player_monsters DROP COLUMN chain_id;`
     },
 ]
