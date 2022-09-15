@@ -1,13 +1,18 @@
+import BossMonster from "./BossMonster";
+import PlayerMonster from "./PlayerMonster";
+import WildMonster from "./WildMonster";
+
 export interface BaseMonsterConstructor {
-    onLoad: () => void; 
     onOffCooldown: () => void;
 };
 
 export interface PlayerMonsterConstructor extends BaseMonsterConstructor {
+    onLoad: (monster: PlayerMonster) => void; 
     tokenId: number;
 }
 
 export interface MonsterConstructor extends BaseMonsterConstructor {
+    onLoad: (monster: BossMonster | WildMonster) => void; 
     metadataId: number;
 }
 

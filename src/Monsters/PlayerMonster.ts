@@ -4,11 +4,13 @@ import { PlayerMonsterConstructor } from "./types";
 
 export default class PlayerMonster extends Base {
 
+    onLoad;
     tokenId;
 
     constructor({ onLoad, onOffCooldown, tokenId }: PlayerMonsterConstructor) {
-        super({ onLoad, onOffCooldown });
+        super({ onOffCooldown });
         this.tokenId = tokenId;
+        this.onLoad = onLoad;
         this.applyStats();
     }
 
@@ -20,11 +22,13 @@ export default class PlayerMonster extends Base {
                 attack,
                 defense,
                 hp,
+                hp as hp_left,
                 element_id,
                 crit_chance,
                 crit_multiplier,
                 e.name as element_name,
-                e.icon_file as element_file
+                e.icon_file as element_file,
+                'player' as type
             FROM monsters mt
             JOIN monster_base_metadata mb
             ON mt.monster_base_metadata_id = mb.id
@@ -66,5 +70,6 @@ export default class PlayerMonster extends Base {
         }
 
         this._applyStats(playerMonsterRes, skills);
+        this.onLoad(this);
     }
 }

@@ -1,8 +1,10 @@
 import { MonsterEquippedSkillById, MonsterStats } from "../../types/Monster";
-import { getRandomChance, getRandomNumber} from "../../utils";
+import { cloneObj, getRandomChance, getRandomNumber} from "../../utils";
 import DB from "../DB";
+import { bossMultiplier } from "./BossMonster";
 import PlayerMonster from "./PlayerMonster";
 import { Attack, AttackRes, BaseMonsterConstructor } from "./types";
+import { wildMultiplier } from "./WildMonster";
 
 export default class Base {
 
@@ -12,31 +14,30 @@ export default class Base {
         attack: 0,
         defense: 0,
         hp: 0,
+        hp_left: 0,
         element_id: 0,
         element_file: "",
         element_name: "",
         crit_chance: 0,
         crit_multiplier: 0,
-        is_shiny: false
+        is_shiny: false,
+        type: "player",
     };
     skills: MonsterEquippedSkillById = {};
 
     db = new DB();
 
-    onReady: () => void = () => {};
-    onCooldown: () => void = () => {};
+    onOffCooldown;
 
     isOnCooldown = false;
     
-    constructor({ onLoad: onReady, onOffCooldown: onCooldown }: BaseMonsterConstructor) {
-        this.onReady = onReady;
-        this.onCooldown = onCooldown;
+    constructor({ onOffCooldown }: BaseMonsterConstructor) {
+        this.onOffCooldown = onOffCooldown;
     }
 
     _applyStats = async (stats: MonsterStats, skills: MonsterEquippedSkillById) => {
         this.stats = stats;
         this.skills = skills;
-        this.onReady();
     }
 
     _getCritMultiplier = () => {
@@ -52,15 +53,40 @@ export default class Base {
         return res?.multiplier ?? 1;
     }
 
+    /**
+     * Current stats
+     */
     getStats = () => {
         return this.stats;
+    }
+
+    /**
+     * Stats without wild / boss multiplier
+     */
+    getBaseStats = () => {
+        let stats = cloneObj<MonsterStats>(this.stats);
+        switch(stats.type) {
+            case "boss":
+                stats.attack = stats.attack / bossMultiplier;
+                stats.defense = stats.defense / bossMultiplier;
+                stats.hp = stats.hp / bossMultiplier;
+                break;
+            case "wild":
+                stats.attack = stats.attack / wildMultiplier;
+                stats.defense = stats.defense / wildMultiplier;
+                stats.hp = stats.hp / wildMultiplier;
+                break;
+            default:
+                break;
+        }
+        return stats;
     }
 
     getSkills = () => {
         return this.skills;
     }
 
-    attack = async (target: Base, skillId: string) => {
+    attack = async (target: Base, skillId: string, ignoreDeath = false) => {
         let noAttack: AttackRes = { attacks: [], totalDamage: 0, critDamage: 0, hits: 0, misses: 0 };
         if(this.isOnCooldown) {
             return noAttack;
@@ -71,7 +97,7 @@ export default class Base {
 
         setTimeout(() => {
             this.isOnCooldown = false;
-            this.onCooldown();
+            this.onOffCooldown();
         }, skill.cooldown * 1000);
 
         let attacks: Attack[] = [];
@@ -132,9 +158,9 @@ export default class Base {
             if(effectiveMessage) {
                 console.log(effectiveMessage);
             }
-            console.log(`${target.stats.name} has ${target.stats.hp.toFixed(2)} hp left`);
+            console.log(`${target.stats.name} has ${target.stats.hp_left.toFixed(2)} hp left`);
 
-            if(target.isDead()) {
+            if(!ignoreDeath && target.isDead()) {
                 console.log(`${target.stats.name} died!`);
                 break;
             }
@@ -154,17 +180,17 @@ export default class Base {
         let target = playerMonsters[playerMonsterIndex];
         let skillId = Object.keys(this.skills)[skillIndex];
         
-        let attackRes: AttackRes = await this.attack(target, skillId);
+        let attackRes: AttackRes = await this.attack(target, skillId, true);
         return attackRes.totalDamage;
     }
 
     //mainly used for bosses and wild encounters
     //returns is dead
     receiveDamage = (incomingDamage: number) => {
-        this.stats.hp = this.stats.hp - incomingDamage;
+        this.stats.hp_left -= incomingDamage;
     }
 
     isDead = () => {
-        return this.stats.hp <= 0;
+        return this.stats.hp_left <= 0;
     }
 }

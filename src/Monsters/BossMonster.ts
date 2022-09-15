@@ -3,15 +3,17 @@ import { getRandomChance, getRandomNumber } from "../../utils";
 import Base from "./Base";
 import { MonsterConstructor } from "./types";
 
-const bossMultiplier = 3;
+export const bossMultiplier = 3;
 
 export default class BossMonster extends Base {
 
+    onLoad;
     metadataId;
 
     constructor({ onLoad, onOffCooldown, metadataId }: MonsterConstructor) {
-        super({ onLoad, onOffCooldown });
+        super({ onOffCooldown });
         this.metadataId = metadataId;
+        this.onLoad = onLoad;
         this.applyStats();
     }
 
@@ -60,12 +62,14 @@ export default class BossMonster extends Base {
             attack: 0,
             defense: 0,
             hp: 0,
+            hp_left: 0,
             element_id: 0,
             element_file: "",
             element_name: "",
             crit_chance: 0,
             crit_multiplier: 0,
             is_shiny: false,
+            type: "boss",
         };
 
         stats.name = name;
@@ -77,6 +81,7 @@ export default class BossMonster extends Base {
         stats.attack = getRandomNumber(base_attack, max_attack, true) * bossMultiplier;
         stats.defense = getRandomNumber(base_defense, max_defense, true) * bossMultiplier;
         stats.hp = getRandomNumber(base_hp, max_hp, true) * bossMultiplier;
+        stats.hp_left = stats.hp;
         stats.crit_chance = getRandomNumber(base_crit_chance, max_crit_chance, true);
         stats.crit_multiplier = getRandomNumber(base_crit_multiplier, max_crit_multiplier);
 
@@ -116,5 +121,6 @@ export default class BossMonster extends Base {
         }
 
         this._applyStats(stats, skills);
+        this.onLoad(this);
     }
 }

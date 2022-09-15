@@ -92,12 +92,14 @@ export type MonsterStats = {
     attack: number;
     defense: number;
     hp: number;
+    hp_left: number;
     element_id: number;
     crit_chance: number;
     crit_multiplier: number;
     element_name: string;
     element_file: string;
     is_shiny: boolean;
+    type: MonsterType;
 }
 
 export type MonsterEquippedSkill = {
