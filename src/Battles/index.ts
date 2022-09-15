@@ -7,6 +7,12 @@ import { BattleConstructor, RoomEvent, SkillUsage } from "./types";
 
 const BATTLE_DELAY = 5; // 5 seconds delay for wild/boss battles
 
+const STATUS_BATTLE_ONGOING = 0;
+const STATUS_BATTLE_ENDED = 1;
+
+const BATTLE_TYPE_WILD = 0;
+const BATTLE_TYPE_BOSS = 1;
+
 export class Battle {
     io: Server;
     client: Socket;
@@ -27,13 +33,15 @@ export class Battle {
     playerReady: boolean = false;
     playerCumulativeHp: number = 0;
 
+    battleEnded = false;
+
     onPromptDelete;
 
     db = new DB();
 
-    constructor({ io, client, address, areaId, chainId, type, onPromptDelete }: BattleConstructor) {
+    constructor({ io, socket, address, areaId, chainId, type, onPromptDelete }: BattleConstructor) {
         this.io = io;
-        this.client = client;
+        this.client = socket;
         this.room = `battle_${address}`;
 
         this.address = address;
@@ -43,6 +51,7 @@ export class Battle {
 
         this._joinRoom();
         this._getEncounter();
+        this._getPlayerMonsters();
         this._listenToRoomDestruction();
         this.onPromptDelete = onPromptDelete;
     }
@@ -54,6 +63,7 @@ export class Battle {
      * @param value 
      */
     _emitEvent = (event: string, value: any) => {
+        console.log({event, value});
         this.io.to(this.room).emit(event, value);
     }
 
@@ -67,6 +77,7 @@ export class Battle {
     }
 
     _destroyRoom = () => {
+        console.log('destroying room')
         this.io.in(this.room).socketsLeave(this.room);
     }
 
@@ -75,6 +86,7 @@ export class Battle {
      */
     _listenToRoomDestruction = () => {
         this.io.sockets.adapter.on('delete-room', async(room) => {
+            console.log(room);
             if(room === this.room) {
                 /** log battle */
                 let columns = ['pve_battle_id', 'skill_id', 'monster_id', 'total_damage_dealt', 'crit_damage_dealt', 'hits', 'misses'];
@@ -103,6 +115,7 @@ export class Battle {
                 let query = getInsertQuery(columns, values, 'pve_battle_skills_used');
                 await this.db.executeQuery(query);
                 this.onPromptDelete();
+                console.log('room destroyed');
             }
         });
     }
@@ -183,21 +196,32 @@ export class Battle {
 
     //encounter attack
     _onEncounterOffCooldown = async() => {
+        if(this.battleEnded) {
+            return;
+        }
+
         // attack random player monster
         let totalDamage = await this.encounter!.attackPlayer(Object.values(this.playerMonsters));
         this.playerCumulativeHp -= totalDamage;
         this._emitEvent('encounter_hit', totalDamage);
+        this._emitEvent('player_hp_left', this.playerCumulativeHp);
 
         if(this.playerCumulativeHp < 0) {
+            this.battleEnded = true;
             this._sendLoseMessage();
             this.endBattle();
         }
     }
 
-    _onPlayerMonsterLoad = () => {
-        this.playerReady = true;
-        if(this.encounterReady) {
-            this._start();
+    _onPlayerMonsterLoad = (playerMonster: PlayerMonster) => {
+        this.playerMonsters[playerMonster.tokenId] = playerMonster;
+        this.playerCumulativeHp += playerMonster.getStats().hp;
+
+        if(this.playerMonsterCount === Object.keys(this.playerMonsters).length) {
+            this.playerReady = true;
+            if(this.encounterReady) {
+                this._start();
+            }
         }
     }
 
@@ -214,9 +238,7 @@ export class Battle {
         this.playerMonsterCount = monsterIds.length;
 
         monsterIds.forEach(id => {
-            let playerMonster = new PlayerMonster({ onOffCooldown: () => this._onPlayerMonsterOffCooldown(id), onLoad: this._onPlayerMonsterLoad, tokenId: id });
-            this.playerMonsters[id] = playerMonster;
-            this.playerCumulativeHp += playerMonster.stats.hp;
+            new PlayerMonster({ onOffCooldown: () => this._onPlayerMonsterOffCooldown(id), onLoad: this._onPlayerMonsterLoad, tokenId: id });
         });
     }
 
@@ -245,7 +267,7 @@ export class Battle {
     _start = async() => {
         let now = getUTCDatetime();
         let columns = ['address', 'status', 'time_start'];
-        let values: any[][] = [[this.address, 0, now]];
+        let values: any[][] = [[this.address, STATUS_BATTLE_ONGOING, now]];
 
         let query = getInsertQuery(columns, values, 'pve_battles', true);
         let ret = await this.db.executeQueryForSingleResult<{ id: number }>(query);
@@ -275,8 +297,29 @@ export class Battle {
     /**
      * Triggers when the battle ended.
      */
-    endBattle = () => {
+    endBattle = async() => {
         this._sendBattleStats();
+
+        let now = getUTCDatetime();
+        let query = `UPDATE pve_battles SET time_end = '${now}', status = ${STATUS_BATTLE_ENDED} WHERE id = ${this.battle_id}`;
+        await this.db.executeQuery(query);
+
+        let columns = ['pve_battle_id', 'type', 'monster_base_metadata_id', 'attack', 'defense', 'hp', 'hp_left', 'crit_chance', 'crit_multiplier', 'is_shiny', 'is_captured'];
+        let values: any[][] = [[
+            this.battle_id,
+            BATTLE_TYPE_WILD, // or boss
+            this.encounter!.metadataId,
+            this.encounter!.stats.attack,
+            this.encounter!.stats.defense,
+            this.encounter!.stats.hp,
+            this.encounter!.stats.hp_left,
+            this.encounter!.stats.crit_chance,
+            this.encounter!.stats.crit_multiplier,
+            this.encounter!.stats.is_shiny,
+            'false',
+        ]];
+        await this.db.executeQuery(getInsertQuery(columns, values, 'pve_battle_encounters'));
+
         this._destroyRoom();
     }
 }

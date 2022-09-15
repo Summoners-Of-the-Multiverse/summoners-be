@@ -1,9 +1,10 @@
 import { Server, Socket } from "socket.io";
+import { Battle } from ".";
 import { MonsterType } from "../../types/Monster";
 
 export type BattleConstructor = {
     io: Server;
-    client: Socket;
+    socket: Socket;
     address: string;
     areaId: number;
     chainId: string;
