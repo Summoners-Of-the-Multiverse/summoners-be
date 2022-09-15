@@ -462,6 +462,8 @@ export const seedPlayerEquippedMonsters = async(addresses: string[]) => {
                 do {
                     monsterId = getRandomNumber(1, 100, true);
                 } while(monsterIds.includes(monsterId));
+
+                monsterIds.push(monsterId);
                 values.push([address, monsterId, chain]);
             }
         }
