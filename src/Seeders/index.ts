@@ -28,8 +28,8 @@ const MAX_CRIT_MULTIPLIER = 10;
 //skills
 const MIN_HITS = 1;
 const MAX_HITS = 10;
-const MIN_CD = 5;
-const MAX_CD = 60;
+const MIN_CD = 2;
+const MAX_CD = 10;
 const MIN_ACCURACY = 60;
 const MAX_ACCURACY = 100;
 const MIN_SKILL_MULTIPLIER = 0.25;
