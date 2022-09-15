@@ -6,8 +6,8 @@ export default class PlayerMonster extends Base {
 
     tokenId;
 
-    constructor({ onReady, tokenId }: PlayerMonsterConstructor) {
-        super({ onReady });
+    constructor({ onReady, onCooldown, tokenId }: PlayerMonsterConstructor) {
+        super({ onReady, onCooldown });
         this.tokenId = tokenId;
         this.applyStats();
     }

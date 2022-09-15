@@ -9,8 +9,8 @@ export default class BossMonster extends Base {
 
     metadataId;
 
-    constructor({ onReady, metadataId }: MonsterConstructor) {
-        super({ onReady });
+    constructor({ onReady, onCooldown, metadataId }: MonsterConstructor) {
+        super({ onReady, onCooldown });
         this.metadataId = metadataId;
         this.applyStats();
     }
