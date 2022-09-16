@@ -1,6 +1,6 @@
 import { MonsterBaseMetadata, MonsterEquippedSkill, MonsterEquippedSkillById, MonsterStats } from "../../types/Monster";
 import { getRandomChance, getRandomNumber } from "../../utils";
-import Base, { bossMultiplier } from "./Base";
+import Base, { bossHpMultiplier, bossMultiplier } from "./Base";
 import { MonsterConstructor } from "./types";
 
 export default class BossMonster extends Base {
@@ -78,7 +78,7 @@ export default class BossMonster extends Base {
         stats.element_name = element_name;
         stats.attack = getRandomNumber(base_attack, max_attack, true) * bossMultiplier;
         stats.defense = getRandomNumber(base_defense, max_defense, true) * bossMultiplier;
-        stats.hp = getRandomNumber(base_hp, max_hp, true) * bossMultiplier;
+        stats.hp = getRandomNumber(base_hp, max_hp, true) * bossMultiplier * bossHpMultiplier;
         stats.hp_left = stats.hp;
         stats.crit_chance = getRandomNumber(base_crit_chance, max_crit_chance, true);
         stats.crit_multiplier = getRandomNumber(base_crit_multiplier, max_crit_multiplier);

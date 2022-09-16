@@ -4,8 +4,10 @@ import DB from "../DB";
 import PlayerMonster from "./PlayerMonster";
 import { Attack, AttackRes, BaseMonsterConstructor } from "./types";
 
-export const bossMultiplier = 3;
-export const wildMultiplier = 1.5;
+export const bossMultiplier = 5;
+export const bossHpMultiplier = 50;
+export const wildMultiplier = 2;
+export const wildHpMultiplier = 5;
 
 export default class Base {
 
@@ -70,12 +72,12 @@ export default class Base {
             case "boss":
                 stats.attack = stats.attack / bossMultiplier;
                 stats.defense = stats.defense / bossMultiplier;
-                stats.hp = stats.hp / bossMultiplier;
+                stats.hp = stats.hp / (bossMultiplier * bossHpMultiplier);
                 break;
             case "wild":
                 stats.attack = stats.attack / wildMultiplier;
                 stats.defense = stats.defense / wildMultiplier;
-                stats.hp = stats.hp / wildMultiplier;
+                stats.hp = stats.hp / (wildMultiplier * wildHpMultiplier);
                 break;
             default:
                 break;
@@ -94,6 +96,10 @@ export default class Base {
         }
 
         let skill = this.skills[skillId];
+        if(!skill) {
+            throw new Error("No skills selected!");
+        }
+        
         this.isOnCooldown = true;
 
         setTimeout(() => {
@@ -122,8 +128,8 @@ export default class Base {
             let damage = 0;
             let hit = getRandomChance() <= skill.accuracy;
             if(!hit) {
-                console.log(`${this.stats.name} missed!`);
-                console.log('\n');
+                //console.log(`${this.stats.name} missed!`);
+                //console.log('\n');
                 attacks.push({
                     damage,
                     type: "miss",
@@ -145,7 +151,7 @@ export default class Base {
 
             target.receiveDamage(damage);
 
-            console.log(`${this.stats.name} used ${skill.name} and dealt ${damage.toFixed(2)} damage!${ isCrit? ' !!CRIT!!' : ''}`);
+            //console.log(`${this.stats.name} used ${skill.name} and dealt ${damage.toFixed(2)} damage!${ isCrit? ' !!CRIT!!' : ''}`);
 
             let effectiveMessage = '';
             if(elementMultiplier > 1) {
@@ -157,15 +163,15 @@ export default class Base {
             }
 
             if(effectiveMessage) {
-                console.log(effectiveMessage);
+                //console.log(effectiveMessage);
             }
-            console.log(`${target.stats.name} has ${target.stats.hp_left.toFixed(2)} hp left`);
+            //console.log(`${target.stats.name} has ${target.stats.hp_left.toFixed(2)} hp left`);
 
             if(!ignoreDeath && target.isDead()) {
-                console.log(`${target.stats.name} died!`);
+                //console.log(`${target.stats.name} died!`);
                 break;
             }
-            console.log('\n');
+            //console.log('\n');
         }
 
         return { attacks, totalDamage, critDamage, hits, misses } as AttackRes;
@@ -176,6 +182,9 @@ export default class Base {
      * @param playerMonsters array
      */
     attackPlayer = async(playerMonsters: PlayerMonster[]) => {
+        if(this.isDead()) {
+            return 0;
+        }
         let skillIndex = getRandomNumber(1, Object.keys(this.skills).length - 1, true);
         let playerMonsterIndex = getRandomNumber(1, playerMonsters.length - 1, true);
         let target = playerMonsters[playerMonsterIndex];
