@@ -260,6 +260,7 @@ export const seedMonsterEquippedSkills = async() => {
                 skillId = getRandomNumber(1, nEffects, true);
             } while(skills.includes(skillId));
 
+            skills.push(skillId);
             values.push([monsterId, skillId]);
         }
     }
