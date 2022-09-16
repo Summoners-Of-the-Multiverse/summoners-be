@@ -49,11 +49,17 @@ export class Battle {
         this.chainId = chainId;
         this.type = type;
 
-        this._joinRoom();
-        this._getEncounter();
-        this._getPlayerMonsters();
-        this._listenToRoomDestruction();
-        this.onPromptDelete = onPromptDelete;
+        try {
+            this._joinRoom();
+            this._getEncounter();
+            this._getPlayerMonsters();
+            this._listenToRoomDestruction();
+            this.onPromptDelete = onPromptDelete;
+        }
+
+        catch(e: any) {
+            throw new Error(e);
+        }
     }
 
     /**
@@ -115,14 +121,18 @@ export class Battle {
                     return;
                 }
 
-                let query = getInsertQuery(columns, values, 'pve_battle_skills_used');
+                let query = getInsertQuery(columns, values, 'pve_battle_player_skills_used');
                 await this.db.executeQuery(query);
             }
         });
     }
 
     _listenToRoomEvents = () => {
-        this.io.on(this.room, async({ type, value }: RoomEvent) => {
+        this.client.on(this.room, async({ type, value }: RoomEvent) => {
+            if(this.battleEnded) {
+                return;
+            }
+
             switch(type) {
                 case "player_attack":
                     //player attack
@@ -177,7 +187,7 @@ export class Battle {
 
     _sendBattleStats = () => {
         this._emitEvent('end_battle_skill_usage', this.skillUsage);
-        this._emitEvent('end_battle_encounter_hp', this.encounter!.stats.hp);
+        this._emitEvent('end_battle_encounter_hp', this.encounter!.stats.hp_left);
     }
 
     _sendLoseMessage = () => {
@@ -208,7 +218,6 @@ export class Battle {
         this._emitEvent('player_hp_left', this.playerCumulativeHp);
 
         if(this.playerCumulativeHp < 0) {
-            this.battleEnded = true;
             this._sendLoseMessage();
             this.endBattle();
         }
@@ -227,7 +236,10 @@ export class Battle {
     }
 
     _onPlayerMonsterOffCooldown = (id: number) => {
-        this._emitEvent("player_monster_off_cd", id.toString());
+        if(this.battleEnded) {
+            return;
+        }
+        this._emitEvent("player_monster_off_cd", id);
     }
 
     _getPlayerMonsters = async() => {
@@ -284,6 +296,7 @@ export class Battle {
             playerMonsterSkills[monsterId] = playerMonster.getSkills();
         }
 
+        this._listenToRoomEvents();
         this._emitEvent('battle_start', {
             playerMonsters,
             playerMonsterSkills,
@@ -299,6 +312,7 @@ export class Battle {
      * Triggers when the battle ended.
      */
     endBattle = async() => {
+        this.battleEnded = true;
         this._sendBattleStats();
 
         let now = getUTCDatetime();
