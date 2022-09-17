@@ -87,6 +87,7 @@ export default class BossMonster extends Base {
             SELECT 
                 ms.id,
                 ms.name,
+                e.id as element_id,
                 e.name as element_name,
                 e.icon_file as element_file,
                 hits,
