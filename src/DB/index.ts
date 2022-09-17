@@ -133,17 +133,21 @@ export default class DB {
             port: this.port,
             database: this.database,
         });
+        let isSuccess = false;
         try {
             await client.connect();
             await client.query(query);
-            await client.end();
+            isSuccess = true;
         }
     
         catch (e){
             console.log(e);
-            return false;
         }
-        return true;
+
+        finally {
+            await client.end();
+            return isSuccess;
+        }
     }
 
     executeQueryForResults = async<T = any>(query: string): Promise<T[] | undefined> => {
@@ -154,15 +158,21 @@ export default class DB {
             port: this.port,
             database: this.database,
         });
+        
+        let res = undefined;
         try {
             await client.connect();
-            let res = await client.query(query);
-            await client.end();
-            return res.rows;
+            res = await client.query(query);
         }
     
         catch (e){
-            return undefined;
+            console.log(e);
+        }
+
+        finally {
+            await client.end();
+            if(!res) return res;
+            else return res.rows;
         }
     }
 
