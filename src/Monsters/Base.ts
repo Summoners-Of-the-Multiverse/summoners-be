@@ -90,9 +90,9 @@ export default class Base {
     }
 
     attack = async (target: Base, skillId: string, ignoreDeath = false) => {
-        let noAttack: AttackRes = { attacks: [], totalDamage: 0, critDamage: 0, hits: 0, misses: 0 };
+        let attackRes: AttackRes = { attacks: [], totalDamage: 0, critDamage: 0, hits: 0, misses: 0 };
         if(this.isOnCooldown) {
-            return noAttack;
+            return attackRes;
         }
 
         let skill = this.skills[skillId];
@@ -106,20 +106,13 @@ export default class Base {
             this.isOnCooldown = false;
             this.onOffCooldown();
         }, skill.cooldown * 1000);
-
-        let attacks: Attack[] = [];
-        let hits: number = 0;
-        let misses: number = 0;
-        let totalDamage: number = 0;
-        let critDamage: number = 0;
-
         if(target.stats.defense >= this.stats.attack) {
             //no damage
-            attacks.push({
+            attackRes.attacks.push({
                 damage: 0,
                 type: "immune",
             });
-            return noAttack;
+            return attackRes;
         }
 
         let elementMultiplier = await this._getElementMultiplier(skill.element_id, target.stats.element_id);
@@ -130,24 +123,24 @@ export default class Base {
             if(!hit) {
                 //console.log(`${this.stats.name} missed!`);
                 //console.log('\n');
-                attacks.push({
+                attackRes.attacks.push({
                     damage,
                     type: "miss",
                 });
-                misses++;
+                attackRes.misses++;
                 continue;
             }
             
             let critMultiplier = this._getCritMultiplier();
             let isCrit = critMultiplier > 1;
             damage = (this.stats.attack - target.stats.defense) * critMultiplier * elementMultiplier;
-            attacks.push({
+            attackRes.attacks.push({
                 damage,
                 type: isCrit? "crit" : "normal",
             });
-            hits++;
-            totalDamage += damage;
-            critDamage += isCrit? damage : 0;
+            attackRes.hits++;
+            attackRes.totalDamage += damage;
+            attackRes.critDamage += isCrit? damage : 0;
 
             target.receiveDamage(damage);
 
@@ -174,7 +167,7 @@ export default class Base {
             //console.log('\n');
         }
 
-        return { attacks, totalDamage, critDamage, hits, misses } as AttackRes;
+        return attackRes as AttackRes;
     }
 
     /**
