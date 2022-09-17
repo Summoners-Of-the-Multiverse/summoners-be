@@ -48,17 +48,19 @@ export class Battle {
         this.areaId = areaId;
         this.chainId = chainId;
         this.type = type;
+        this.onPromptDelete = onPromptDelete;
+    }
 
+    init = () => {
         try {
             this._joinRoom();
             this._getEncounter();
             this._getPlayerMonsters();
             this._listenToRoomDestruction();
-            this.onPromptDelete = onPromptDelete;
         }
 
         catch(e: any) {
-            throw new Error(e);
+            throw Error(e);
         }
     }
 
@@ -69,14 +71,18 @@ export class Battle {
      * @param value 
      */
     _emitEvent = (event: string, value: any) => {
+        if(this.battleEnded) {
+            return;
+        }
+
         console.log({event, value});
         this.io.to(this.room).emit(event, value);
     }
 
     //puts client into battle room
-    _joinRoom = async() => {
+    _joinRoom = () => {
         if(this.io.sockets.adapter.rooms.get(this.room)) {
-            throw new Error("There is an ongoing battle");
+            throw Error("There is an ongoing battle");
         }
 
         this.client.join(this.room);
@@ -92,7 +98,6 @@ export class Battle {
      */
     _listenToRoomDestruction = () => {
         this.io.sockets.adapter.on('delete-room', async(room) => {
-            console.log(room);
             if(room === this.room) {
                 console.log('destroying room');
                 /** log battle */
@@ -146,13 +151,14 @@ export class Battle {
                     }
 
                     let attackRes = await playerMonster.attack(this.encounter!, skillId);
-                    if(!attackRes) {
+                    let { attacks, hits, misses, totalDamage, critDamage } = attackRes;
+
+                    if(attacks.length === 0) {
                         //on cooldown
                         return;
                     }
 
-                    let { attacks, hits, misses, totalDamage, critDamage } = attackRes;
-                    this._emitEvent('encounter_damage_received', attacks);
+                    this._emitEvent('encounter_damage_received', { attacks, encounterHpLeft: this.encounter!.stats.hp_left });
                     
                     if(!this.skillUsage[monsterId]) {
                         this.skillUsage[monsterId] = {};
@@ -214,8 +220,7 @@ export class Battle {
         // attack random player monster
         let totalDamage = await this.encounter!.attackPlayer(Object.values(this.playerMonsters));
         this.playerCumulativeHp -= totalDamage;
-        this._emitEvent('encounter_hit', totalDamage);
-        this._emitEvent('player_hp_left', this.playerCumulativeHp);
+        this._emitEvent('encounter_hit', {damage: totalDamage, playerHpLeft: this.playerCumulativeHp});
 
         if(this.playerCumulativeHp < 0) {
             this._sendLoseMessage();
@@ -236,16 +241,13 @@ export class Battle {
     }
 
     _onPlayerMonsterOffCooldown = (id: number) => {
-        if(this.battleEnded) {
-            return;
-        }
         this._emitEvent("player_monster_off_cd", id);
     }
 
     _getPlayerMonsters = async() => {
         let monsterIds = await getPlayerMonsters(this.address, this.chainId);
         if(!monsterIds || monsterIds.length === 0) {
-            throw new Error("Unable to get player monsters");
+            throw Error("Unable to get player monsters");
         }
 
         this.playerMonsterCount = monsterIds.length;
@@ -258,7 +260,8 @@ export class Battle {
     _getEncounter = async() => {
         let randomMonsterMetadataId = await getRandomAreaMonsterBaseMetadataId(this.areaId, this.chainId);
         if(!randomMonsterMetadataId) {
-            throw new Error("Unable to get monster metadata");
+            console.log({areaId: this.areaId, chainId: this.chainId})
+            throw Error("Unable to get monster metadata");
         }
 
         switch(this.type) {
@@ -269,7 +272,7 @@ export class Battle {
                 this.encounter = new WildMonster({ onOffCooldown: this._onEncounterOffCooldown, onLoad: this._onEncounterLoad, metadataId: randomMonsterMetadataId });
                 break;
             default:
-                throw new Error("Unknown type");
+                throw Error("Unknown type");
         }
     }
 
@@ -285,7 +288,7 @@ export class Battle {
         let query = getInsertQuery(columns, values, 'pve_battles', true);
         let ret = await this.db.executeQueryForSingleResult<{ id: number }>(query);
         if(!ret || !ret.id) {
-            throw new Error("Unable to create session");
+            throw Error("Unable to create session");
         }
         this.battle_id = ret.id;
 
