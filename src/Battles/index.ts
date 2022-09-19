@@ -158,7 +158,7 @@ export class Battle {
                         return;
                     }
 
-                    this._emitEvent('encounter_damage_received', { attacks, encounterHpLeft: this.encounter!.stats.hp_left });
+                    this._emitEvent('encounter_damage_received', { monsterId, skillId, attacks, encounterHpLeft: this.encounter!.stats.hp_left });
                     
                     if(!this.skillUsage[monsterId]) {
                         this.skillUsage[monsterId] = {};

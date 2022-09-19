@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import { Socket, Server } from 'socket.io';
 import cors from 'cors';
 import { Battle } from './src/Battles';
+import { StartBattleParams } from './types';
 
 //create app
 const port = 8081;
@@ -25,18 +26,14 @@ let io = new Server(http, {
     }
 });
 
-let sockets: {[guid: string]: Socket} = {};
-
 //websocket functions
 io.on('connection', (socket: Socket) => {
-    //sends heartbeat
-    sockets[socket.id] = socket;
-    socket.on('disconnect', () => {
-        //clean up
-        delete sockets[socket.id];
-    });
+    socket.on('start_battle', ({ address, chainId, areaId}: StartBattleParams) => {
+        if(!address || !chainId || !areaId) {
+            socket.emit("invalid_battle");
+            return;
+        }
 
-    socket.on('start_battle', (address: string) => {
         console.log('starting battle for ' + socket.id);
         let battle: Battle | null = null;
         let onPromptDelete = () => { 
@@ -44,7 +41,8 @@ io.on('connection', (socket: Socket) => {
             console.log('room destroyed'); 
         };
         try {
-            battle = new Battle({io, socket, address, areaId: 1, chainId: '0x89', type: "wild", onPromptDelete});
+            battle = new Battle({io, socket, address, areaId, chainId, type: "wild", onPromptDelete});
+            battle.init();
         }
 
         catch (e){
