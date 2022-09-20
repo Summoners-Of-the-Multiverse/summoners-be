@@ -18,6 +18,7 @@ export class Battle {
     client: Socket;
     room: string;
     battle_id: number = 0;
+    hasLogged = false;
 
     encounter: BossMonster | WildMonster | undefined;
     playerMonsters: { [id: number]: PlayerMonster } = {};
@@ -98,8 +99,14 @@ export class Battle {
      */
     _listenToRoomDestruction = () => {
         this.io.sockets.adapter.on('delete-room', async(room) => {
+            //prevent dupes
+            if(this.hasLogged) {
+                return;
+            }
+
+            this.hasLogged = true;
+
             if(room === this.room) {
-                console.log('destroying room');
                 /** log battle */
                 let columns = ['pve_battle_id', 'skill_id', 'monster_id', 'total_damage_dealt', 'crit_damage_dealt', 'hits', 'misses'];
                 let values: any[][] = [];
