@@ -100,6 +100,7 @@ export class Battle {
      */
     _listenToRoomDestruction = () => {
         this.io.sockets.adapter.on('delete-room', async(room) => {
+
             //prevent dupes
             if(this.hasLogged) {
                 return;
@@ -136,6 +137,7 @@ export class Battle {
 
                 let query = getInsertQuery(columns, values, 'pve_battle_player_skills_used');
                 await this.db.executeQuery(query);
+                this.onPromptDelete();
             }
         });
     }
