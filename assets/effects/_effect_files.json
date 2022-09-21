@@ -1,19 +1,224 @@
 {
     "file_names": [
-        "blast.gif",
-        "explosion.gif",
-        "fancy-fireball.gif",
-        "fire-arrow.gif",
-        "flame-ring.gif",
-        "flamethrower.gif",
-        "meteor-strike.gif",
-        "razor-strike.gif",
-        "red-gas.gif",
-        "soul-strike.gif",
-        "tangle.gif",
-        "thunder-strike.gif",
-        "thunder.gif",
-        "thunderbolt.gif",
-        "white-smoke.gif"
+        {
+            "name": "Blood Burst",
+            "effect_file": "blood_01.gif"
+        },
+        {
+            "name": "Summon Skull",
+            "effect_file": "blood_02.gif"
+        },
+        {
+            "name": "Scratch",
+            "effect_file": "blood_effect_01.gif"
+        },
+        {
+            "name": "Slash",
+            "effect_file": "blood_effect_04.gif"
+        },
+        {
+            "name": "Maul",
+            "effect_file": "blood_effect_10.gif"
+        },
+        {
+            "name": "Sanguine Pool",
+            "effect_file": "blood_floor_03.gif"
+        },
+        {
+            "name": "Ember",
+            "effect_file": "burn_effect.gif"
+        },
+        {
+            "name": "Explode",
+            "effect_file": "destruction_air_normal.gif"
+        },
+        {
+            "name": "Nether Strike",
+            "effect_file": "destruction_air_purple"
+        },
+        {
+            "name": "Poison Uppercut",
+            "effect_file": "ef_3_effects_green.gif"
+        },
+        {
+            "name": "Uppercut",
+            "effect_file": "ef_3_effects_normal.gif"
+        },
+        {
+            "name": "Dark Uppercut",
+            "effect_file": "ef_3_effects_purple.gif"
+        },
+        {
+            "name": "Lightning Slash",
+            "effect_file": "ef_4_effects_blue.gif"
+        },
+        {
+            "name": "Fire Slash",
+            "effect_file": "ef_4_effects_normal.gif"
+        },
+        {
+            "name": "Poison Slash",
+            "effect_file": "ef_4_effects_green.gif"
+        },
+        {
+            "name": "Drill",
+            "effect_file": "ef_5_effects_blue.gif"
+        },
+        {
+            "name": "Dark Energy",
+            "effect_file": "ef_7_effects_purple.gif"
+        },
+        {
+            "name": "Intense Napalm",
+            "effect_file": "ef_8_1_effects_blue.gif"
+        },
+        {
+            "name": "Napalm",
+            "effect_file": "ef_8_1_effects_normal.gif"
+        },
+        {
+            "name": "Triple Slash",
+            "effect_file": "ef_10_effects_normal.gif"
+        },
+        {
+            "name": "Judgement",
+            "effect_file": "ef_11_effects_purple.gif"
+        },
+        {
+            "name": "Judgement End",
+            "effect_file": "ef_11_effects_normal.gif"
+        },
+        {
+            "name": "Poison Mist",
+            "effect_file": "ef_12_effects_green.gif"
+        },
+        {
+            "name": "Spark",
+            "effect_file": "ef_13_effects_blue.gif"
+        },
+        {
+            "name": "Dark Pulse",
+            "effect_file": "ef_14_effects_purple.gif"
+        },
+        {
+            "name": "Poison Pulse",
+            "effect_file": "ef_14_effects_green.gif"
+        },
+        {
+            "name": "Intense Fire Breath",
+            "effect_file": "ef_16_effects_blue.gif"
+        },
+        {
+            "name": "Fire Breath",
+            "effect_file": "ef_16_effects_normal.gif"
+        },
+        {
+            "name": "Bonk",
+            "effect_file": "ef_17_effects_blue.gif"
+        },
+        {
+            "name": "Dark Bonk",
+            "effect_file": "ef_17_effects_purple.gif"
+        },
+        {
+            "name": "Vine Spikes",
+            "effect_file": "ef_19_effects_green.gif"
+        },
+        {
+            "name": "Electric Ball",
+            "effect_file": "ef_20_effects_blue.gif"
+        },
+        {
+            "name": "Pulsating Energy",
+            "effect_file": "ef_20_effects_blue.gif"
+        },
+        {
+            "name": "Summon Sun",
+            "effect_file": "ef_20_effects_normal.gif"
+        },
+        {
+            "name": "Dark Sun",
+            "effect_file": "ef_20_effects_purple.gif"
+        },
+        {
+            "name": "Bloom",
+            "effect_file": "ef_21_effects_green.gif"
+        },
+        {
+            "name": "Supernova",
+            "effect_file": "ef_23_effects_normal.gif"
+        },
+        {
+            "name": "Flicker",
+            "effect_file": "ef_25_effects_green.gif"
+        },
+        {
+            "name": "Blast",
+            "effect_file": "expl_01_02.gif"
+        },
+        {
+            "name": "Firecracker",
+            "effect_file": "explosion_3.gif"
+        },
+        {
+            "name": "Burn",
+            "effect_file": "fire_small.gif"
+        },
+        {
+            "name": "Conflagaration",
+            "effect_file": "flame_side.gif"
+        },
+        {
+            "name": "Nether Blast",
+            "effect_file": "ground_explosion_blue.gif"
+        },
+        {
+            "name": "Shroom of Death",
+            "effect_file": "ground_explosion_green.gif"
+        },
+        {
+            "name": "Solar Stream",
+            "effect_file": "lazer_normal.gif"
+        },
+        {
+            "name": "Lunar Stream",
+            "effect_file": "lazer_purple"
+        },
+        {
+            "name": "Thick Lightning",
+            "effect_file": "lazer_blue.gif"
+        },
+        {
+            "name": "Smol Lazer",
+            "effect_file": "lazer.gif"
+        },
+        {
+            "name": "Pew",
+            "effect_file": "muzzle_dron_purple.gif"
+        },
+        {
+            "name": "Pew Pew",
+            "effect_file": "muzzle_shotgun_purple.gif"
+        },
+        {
+            "name": "Pew Pew Pew",
+            "effect_file": "muzzle_tank_purple.gif"
+        },
+        {
+            "name": "Shock",
+            "effect_file": "Plazma_Electricity.gif"
+        },
+        {
+            "name": "Boom",
+            "effect_file": "rocket_purple.gif"
+        },
+        {
+            "name": "Smoke",
+            "effect_file": "smoke_2.gif"
+        },
+        {
+            "name": "Dark Tendrils",
+            "effect_file": "smoke_5.gif"
+        }
     ]
 }

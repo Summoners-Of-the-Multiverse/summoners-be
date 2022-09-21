@@ -71,11 +71,11 @@ export const seedMonsterMetadata = async() => {
         let chainId = i < (nMonsters / 2)? BSC.id : POLYGON.id;
         let elementId = getRandomNumber(1, 4, true);
         let name = monsterFile.file_names[i];
-        name = name.replace(/_/g, " ").replace(".png", "");
+        name = name.replace(/_/g, " ").replace(".PNG", "");
 
         let imageName = monsterFile.file_names[i];
-        let imageFile = imageName.replace(".png", "_ori.png");
-        let shinyImageFile = imageName.replace(".png", "_shiftA.png");
+        let imageFile = imageName;
+        let shinyImageFile = imageName.replace(".PNG", "_shiny.png");
         let shinyChance = getRandomChance();
         let baseAttack = getRandomNumber(MIN_ATTACK, MAX_BASE_ATTACK);
         let maxAttack = getRandomNumber(MAX_BASE_ATTACK, MAX_ATTACK);
@@ -140,7 +140,7 @@ export const seedMonsterSkills = async() => {
         let elementTypeId = getRandomNumber(1, 4, true); // type 1 - 4
         let effectId = i + 1; // reference current effect
 
-        let skillName = effectFile.file_names[i].replace(/-/g, " ").replace(".gif", "");
+        let skillName = effectFile.file_names[i].name;
         let hits = getRandomNumber(MIN_HITS, MAX_HITS, true);
         let accuracy = getRandomNumber(MIN_ACCURACY, MAX_ACCURACY, true);
         let cooldown = getRandomNumber(MIN_CD, MAX_CD, true);
@@ -178,7 +178,7 @@ export const seedEffects = async() => {
     let nEffects = effectFile.file_names.length;
 
     for(let i = 0; i < nEffects; i++) {
-        let assetFile = effectFile.file_names[i];
+        let assetFile = effectFile.file_names[i].effect_file;
         effectValues.push([assetFile]);
     }
 
