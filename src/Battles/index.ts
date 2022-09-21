@@ -83,6 +83,7 @@ export class Battle {
     //puts client into battle room
     _joinRoom = () => {
         if(this.io.sockets.adapter.rooms.get(this.room)) {
+            this.client.emit('invalid_battle', 'true');
             throw Error("There is an ongoing battle");
         }
 
@@ -310,7 +311,8 @@ export class Battle {
         this._emitEvent('battle_start', {
             playerMonsters,
             playerMonsterSkills,
-            encounter: this.encounter!.getStats()
+            encounter: this.encounter!.getStats(),
+            battle_id: this.battle_id,
         });
 
         setTimeout(() => {
