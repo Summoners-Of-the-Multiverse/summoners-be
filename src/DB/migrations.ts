@@ -234,4 +234,13 @@ export default [
         query: `ALTER TABLE player_monsters ADD chain_id varchar(50) not null default '';`,
         rollback_query: `ALTER TABLE player_monsters DROP COLUMN chain_id;`
     },
+    {
+        id: 22,
+        query: `
+            CREATE TABLE claimed_addresses (
+                id serial PRIMARY KEY, 
+                address varchar(50) not null
+            );`,
+        rollback_query: `DROP TABLE claimed_addresses;`
+    },
 ]

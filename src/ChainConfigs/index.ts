@@ -265,3 +265,8 @@ export const ONE: ChainConfig = {
     },
     blockExplorerUrl: 'https://explorer.harmony.one',
 };
+
+export const chainConfigs = [
+    BSC.id,
+    POLYGON.id,
+];

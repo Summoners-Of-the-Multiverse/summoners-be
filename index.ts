@@ -5,6 +5,7 @@ import { Socket, Server } from 'socket.io';
 import cors from 'cors';
 import { Battle } from './src/Battles';
 import { StartBattleParams } from './types';
+import { getStarterMonsters, getStarterStatus, insertClaimedAddress } from './src/API';
 
 //create app
 const port = 8081;
@@ -54,6 +55,45 @@ io.on('connection', (socket: Socket) => {
 //api endpoints
 app.get('/', function(req, res) {
     res.send('Hello World');
+});
+
+//starter endpoints
+app.get('/getStarterStatus/:address', async function(req, res) {
+    try {
+        let address = req.params['address'];
+        let hasMinted = await getStarterStatus(address);
+
+        return res.send({ hasMinted });
+    }
+
+    catch {
+        return res.status(400).send("Invalid Address");
+    }
+});
+
+app.get('/getStarterMonsters/:chainId', async function(req, res) {
+    try {
+        let chainId = req.params['chainId'];
+        let starters = await getStarterMonsters(chainId);
+
+        return res.send(starters);
+    }
+
+    catch {
+        return res.status(400).send("Invalid Chain");
+    }
+});
+
+app.post('/mint', async function(req, res) {
+    try {
+        let address = req.body['address'];
+        await insertClaimedAddress(address);
+        return res.send("1");
+    }
+
+    catch {
+        return res.status(400).send("Unknown Error");
+    }
 });
 
 http.listen(port, () => {
