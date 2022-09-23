@@ -66,6 +66,26 @@ export const getStarterMonsters = async(chainId: string) => {
 export const insertClaimedAddress = async(address: string) => {
     let db = new DB();
     address = sanitizeAddress(address);
-    let query = `insert into claimed_addresses (address) values ('${address}');`;
+    let query = `insert into claimed_addresses (address) values ('${address}'); insert into player_locations (address) values ('${address}');`;
     await db.executeQuery(query);
+}
+
+export const moveAddressTo = async(address: string, areaId: number) => {
+    if(!areaId) {
+        throw Error("Invalid location");
+    }
+
+    let db = new DB();
+    address = sanitizeAddress(address);
+    let query = `update player_locations set area_id = ${areaId} where address = '${address}'`;
+    await db.executeQuery(query);
+}
+
+export const getAddressArea = async(address: string) => {
+
+    let db = new DB();
+    address = sanitizeAddress(address);
+    let query = `select area_id from player_locations where address = '${address}'`;
+    return await db.executeQueryForSingleResult<{ area_id: number }>(query);
+
 }

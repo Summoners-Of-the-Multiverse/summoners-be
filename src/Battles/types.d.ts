@@ -6,7 +6,6 @@ export type BattleConstructor = {
     io: Server;
     socket: Socket;
     address: string;
-    areaId: number;
     chainId: string;
     type: MonsterType;
 

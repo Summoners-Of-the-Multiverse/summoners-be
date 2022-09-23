@@ -1,6 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { MonsterEquippedSkillById, MonsterStats, MonsterType } from "../../types/Monster";
 import { getInsertQuery, getUTCDatetime } from "../../utils";
+import { getAddressArea } from "../API";
 import DB from "../DB";
 import { BossMonster, getPlayerMonsters, getRandomAreaMonsterBaseMetadataId, PlayerMonster, WildMonster } from "../Monsters";
 import { BattleConstructor, RoomEvent, SkillUsage } from "./types";
@@ -24,7 +25,7 @@ export class Battle {
     playerMonsters: { [id: number]: PlayerMonster } = {};
     playerMonsterCount: number = 0;
     address: string;
-    areaId: number;
+    areaId: number = 0;
     chainId: string;
     type: MonsterType;
 
@@ -40,20 +41,20 @@ export class Battle {
 
     db = new DB();
 
-    constructor({ io, socket, address, areaId, chainId, type, onPromptDelete }: BattleConstructor) {
+    constructor({ io, socket, address, chainId, type, onPromptDelete }: BattleConstructor) {
         this.io = io;
         this.client = socket;
         this.room = `battle_${address}`;
 
         this.address = address;
-        this.areaId = areaId;
         this.chainId = chainId;
         this.type = type;
         this.onPromptDelete = onPromptDelete;
     }
 
-    init = () => {
+    init = async () => {
         try {
+            await this._getChainId();
             this._joinRoom();
             this._getEncounter();
             this._getPlayerMonsters();
@@ -63,6 +64,14 @@ export class Battle {
         catch(e: any) {
             throw Error(e);
         }
+    }
+
+    _getChainId = async() => {
+        let chainId = await getAddressArea(this.address);
+        if(!chainId) {
+            throw Error("Invalid Area");
+        }
+        this.areaId = chainId.area_id;
     }
 
     /**

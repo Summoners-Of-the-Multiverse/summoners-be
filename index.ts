@@ -5,7 +5,7 @@ import { Socket, Server } from 'socket.io';
 import cors from 'cors';
 import { Battle } from './src/Battles';
 import { StartBattleParams } from './types';
-import { getStarterMonsters, getStarterStatus, insertClaimedAddress } from './src/API';
+import { getAddressArea, getStarterMonsters, getStarterStatus, insertClaimedAddress, moveAddressTo } from './src/API';
 
 //create app
 const port = 8081;
@@ -29,8 +29,8 @@ let io = new Server(http, {
 
 //websocket functions
 io.on('connection', (socket: Socket) => {
-    socket.on('start_battle', ({ address, chainId, areaId}: StartBattleParams) => {
-        if(!address || !chainId || !areaId) {
+    socket.on('start_battle', ({ address, chainId }: StartBattleParams) => {
+        if(!address || !chainId ) {
             socket.emit("invalid_battle");
             return;
         }
@@ -42,7 +42,7 @@ io.on('connection', (socket: Socket) => {
             console.log('room destroyed'); 
         };
         try {
-            battle = new Battle({io, socket, address, areaId, chainId, type: "wild", onPromptDelete});
+            battle = new Battle({io, socket, address, chainId, type: "wild", onPromptDelete});
             battle.init();
         }
 
@@ -93,6 +93,39 @@ app.post('/mint', async function(req, res) {
 
     catch {
         return res.status(400).send("Unknown Error");
+    }
+});
+
+//map api
+app.get('/area/:address', async function(req, res) {
+    try {
+
+        let address = req.params['address'];
+        let area = await getAddressArea(address);
+
+        if(!area) {
+            throw Error("");
+        }
+
+        return res.send({ area_id: area.area_id });
+    }
+
+    catch (e){
+        console.log(e)
+        return res.status(400).send("Invalid address or location");
+    }
+});
+
+app.post('/travel', async function(req, res) {
+    try {
+        let address = req.body['address'];
+        let areaId = req.body['areaId'];
+        await moveAddressTo(address, areaId);
+        return res.send("1");
+    }
+
+    catch {
+        return res.status(400).send("Invalid address or location");
     }
 });
 

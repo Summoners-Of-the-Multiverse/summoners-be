@@ -243,4 +243,14 @@ export default [
             );`,
         rollback_query: `DROP TABLE claimed_addresses;`
     },
+    {
+        id: 23,
+        query: `
+            CREATE TABLE player_locations (
+                id serial PRIMARY KEY, 
+                address varchar(50) not null,
+                area_id int not null default 1
+            );`,
+        rollback_query: `DROP TABLE player_locations;`
+    },
 ]
