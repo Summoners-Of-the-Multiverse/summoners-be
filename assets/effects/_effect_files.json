@@ -34,7 +34,7 @@
         },
         {
             "name": "Nether Strike",
-            "effect_file": "destruction_air_purple"
+            "effect_file": "destruction_air_purple.gif"
         },
         {
             "name": "Poison Uppercut",
