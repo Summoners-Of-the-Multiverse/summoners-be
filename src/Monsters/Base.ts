@@ -97,7 +97,7 @@ export default class Base {
 
         let skill = this.skills[skillId];
         if(!skill) {
-            throw new Error("No skills selected!");
+            throw Error("No skills selected!");
         }
         
         this.isOnCooldown = true;
@@ -106,11 +106,13 @@ export default class Base {
             this.isOnCooldown = false;
             this.onOffCooldown();
         }, skill.cooldown * 1000);
+
         if(target.stats.defense >= this.stats.attack) {
             //no damage
             attackRes.attacks.push({
                 damage: 0,
                 type: "immune",
+                element_id: skill.element_id,
             });
             return attackRes;
         }
@@ -126,6 +128,7 @@ export default class Base {
                 attackRes.attacks.push({
                     damage,
                     type: "miss",
+                    element_id: skill.element_id,
                 });
                 attackRes.misses++;
                 continue;
@@ -137,6 +140,7 @@ export default class Base {
             attackRes.attacks.push({
                 damage,
                 type: isCrit? "crit" : "normal",
+                element_id: skill.element_id,
             });
             attackRes.hits++;
             attackRes.totalDamage += damage;

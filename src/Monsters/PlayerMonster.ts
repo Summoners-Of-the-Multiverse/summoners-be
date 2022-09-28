@@ -18,7 +18,7 @@ export default class PlayerMonster extends Base {
         let playerMonsterRes = await this.db.executeQueryForSingleResult<MonsterStats>(`
             SELECT 
                 mb."name",
-                CASE WHEN mt.is_shiny THEN mb.shiny_img_file ELSE mb.img_file END as img_file,
+                img_file,
                 attack,
                 defense,
                 hp,
@@ -28,6 +28,7 @@ export default class PlayerMonster extends Base {
                 crit_multiplier,
                 e.name as element_name,
                 e.icon_file as element_file,
+                mt.is_shiny,
                 'player' as type
             FROM monsters mt
             JOIN monster_base_metadata mb
@@ -37,7 +38,7 @@ export default class PlayerMonster extends Base {
             WHERE mt.id = ${this.tokenId}`);
 
         if(!playerMonsterRes) {
-            throw new Error("Unable to find player monster");
+            throw Error("Unable to find player monster");
         }
 
         let playerMonsterEquippedSkills = await this.db.executeQueryForResults<MonsterEquippedSkill>(`
@@ -62,7 +63,7 @@ export default class PlayerMonster extends Base {
             WHERE mes.monster_id = ${this.tokenId}`);
 
         if(!playerMonsterEquippedSkills || playerMonsterEquippedSkills.length === 0) {
-            throw new Error("Cant find player skills");
+            throw Error("Cant find player skills");
         }
 
         let skills: MonsterEquippedSkillById = {};

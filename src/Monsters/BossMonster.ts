@@ -30,7 +30,7 @@ export default class BossMonster extends Base {
         `);
 
         if(!metadata) {
-            throw new Error("Cant find metadata");
+            throw Error("Cant find metadata");
         }
 
         let {
@@ -71,7 +71,9 @@ export default class BossMonster extends Base {
         };
 
         stats.name = name;
-        stats.img_file = isShiny? shiny_img_file : img_file;
+
+        //no need to check for shiny file
+        stats.img_file = img_file;
         stats.is_shiny = isShiny;
         stats.element_id = element_id;
         stats.element_file = element_file;
@@ -103,7 +105,7 @@ export default class BossMonster extends Base {
         let allSkillsRes = await this.db.executeQueryForResults<MonsterEquippedSkill>(allSkillsQuery);
 
         if(!allSkillsRes || allSkillsRes.length === 0) {
-            throw new Error("Cant find skills");
+            throw Error("Cant find skills");
         }
 
         let skills: MonsterEquippedSkillById = {};

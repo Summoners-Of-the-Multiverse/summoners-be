@@ -19,6 +19,7 @@ export interface MonsterConstructor extends BaseMonsterConstructor {
 export type Attack = {
     damage: number;
     type: "normal" | "crit" | "immune" | "miss";
+    element_id: number;
 }
 
 export type AttackRes = { 
