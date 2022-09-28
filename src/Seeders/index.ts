@@ -1,6 +1,7 @@
 import { BSC, POLYGON } from '../ChainConfigs';
 import monsterFile from '../../assets/sprites/_monster_sprite_files.json';
 import effectFile from '../../assets/effects/_effect_files.json';
+import skillIconsFile from '../../assets/skills/_skill_icon_files.json';
 import DB from '../DB';
 import { getInsertQuery, getRandomChance, getRandomNumber } from '../../utils';
 
@@ -15,9 +16,9 @@ const MAX_ATTACK = 50;
 const MIN_DEFENSE = 1;
 const MAX_BASE_DEFENSE = 5;
 const MAX_DEFENSE = 10;
-const MIN_HP = 200;
-const MAX_BASE_HP = 500;
-const MAX_HP = 750;
+const MIN_HP = 800;
+const MAX_BASE_HP = 2000;
+const MAX_HP = 3000;
 const MIN_CRIT_CHANCE = 10;
 const MAX_BASE_CRIT_CHANCE = 30;
 const MAX_CRIT_CHANCE = 50;
@@ -26,11 +27,11 @@ const MAX_BASE_CRIT_MULTIPLIER = 2;
 const MAX_CRIT_MULTIPLIER = 10;
 
 //skills
-const MIN_HITS = 1;
-const MAX_HITS = 10;
+const MIN_HITS = 5;
+const MAX_HITS = 15;
 const MIN_CD = 2;
 const MAX_CD = 5;
-const MIN_ACCURACY = 60;
+const MIN_ACCURACY = 80;
 const MAX_ACCURACY = 100;
 const MIN_SKILL_MULTIPLIER = 0.25;
 const MAX_SKILL_MULTIPLIER = 5;
@@ -71,11 +72,13 @@ export const seedMonsterMetadata = async() => {
         let chainId = i < (nMonsters / 2)? BSC.id : POLYGON.id;
         let elementId = getRandomNumber(1, 4, true);
         let name = monsterFile.file_names[i];
-        name = name.replace(/_/g, " ").replace(".PNG", "");
+        name = name.replace(/_/g, " ").replace(".png", "");
 
         let imageName = monsterFile.file_names[i];
         let imageFile = imageName;
-        let shinyImageFile = imageName.replace(".PNG", "_shiny.png");
+
+        //currently unused
+        let shinyImageFile = imageName.replace(".png", "_shiny.png");
         let shinyChance = getRandomChance();
         let baseAttack = getRandomNumber(MIN_ATTACK, MAX_BASE_ATTACK);
         let maxAttack = getRandomNumber(MAX_BASE_ATTACK, MAX_ATTACK);
@@ -132,7 +135,7 @@ export const seedMonsterSkills = async() => {
         return;
     }
 
-    let columns = ['element_id', 'effect_id', 'name', 'hits', 'accuracy', 'cooldown', 'multiplier'];
+    let columns = ['element_id', 'effect_id', 'name', 'hits', 'accuracy', 'cooldown', 'multiplier', 'icon_file'];
     let values: any[][] = [];
     let nEffects = effectFile.file_names.length;
 
@@ -146,7 +149,10 @@ export const seedMonsterSkills = async() => {
         let cooldown = getRandomNumber(MIN_CD, MAX_CD, true);
         let multiplier = getRandomNumber(MIN_SKILL_MULTIPLIER, MAX_SKILL_MULTIPLIER);
 
-        values.push([elementTypeId, effectId.toString(), skillName, hits, accuracy, cooldown, multiplier]);
+        let iconFileIndex = getRandomNumber(0, skillIconsFile.file_names.length - 1, true);
+        let iconFile = skillIconsFile.file_names[iconFileIndex];
+
+        values.push([elementTypeId, effectId.toString(), skillName, hits, accuracy, cooldown, multiplier, iconFile]);
     }
 
     let query = getInsertQuery(columns, values, table);

@@ -253,4 +253,10 @@ export default [
             );`,
         rollback_query: `DROP TABLE player_locations;`
     },
+    {
+        id: 24,
+        query: `
+            ALTER TABLE monster_skills ADD icon_file text not null default ''`,
+        rollback_query: `ALTER TABLE monster_skills DROP COLUMN icon_file;`
+    },
 ]
