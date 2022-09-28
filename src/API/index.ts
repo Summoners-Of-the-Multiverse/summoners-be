@@ -40,6 +40,7 @@ export const getStarterMonsters = async(chainId: string) => {
     let query = `select 
                     md.id,
                     md.name,
+                    e.id as element_id,
                     e.name as element_name,
                     img_file,
                     base_attack,
