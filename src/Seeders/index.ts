@@ -7,7 +7,6 @@ import { getInsertQuery, getRandomChance, getRandomNumber } from '../../utils';
 
 const SEED_MONSTER_COUNT = 100;
 const SEED_EQUIPPED_SKILL_COUNT = 4;
-const SEED_AREA_MONSTER_COUNT = 30;
 
 //monsters
 const MIN_ATTACK = 30;
@@ -27,10 +26,10 @@ const MAX_BASE_CRIT_MULTIPLIER = 2;
 const MAX_CRIT_MULTIPLIER = 10;
 
 //skills
-const MIN_HITS = 5;
-const MAX_HITS = 15;
-const MIN_CD = 2;
-const MAX_CD = 5;
+const MIN_HITS = 2;
+const MAX_HITS = 8;
+const MIN_CD = 5;
+const MAX_CD = 10;
 const MIN_ACCURACY = 80;
 const MAX_ACCURACY = 100;
 const MIN_SKILL_MULTIPLIER = 0.25;
@@ -68,47 +67,44 @@ export const seedMonsterMetadata = async() => {
     let values: any[][] = [];
     let nMonsters = monsterFile.file_names.length;
 
-    for(let i = 0; i < nMonsters; i++) {
-        let chainId = i < (nMonsters / 2)? BSC.id : POLYGON.id;
-        let elementId = getRandomNumber(1, 4, true);
-        let name = monsterFile.file_names[i];
-        name = name.replace(/_/g, " ").replace(".png", "");
-
-        let imageName = monsterFile.file_names[i];
-        let imageFile = imageName;
-
-        //currently unused
-        let shinyImageFile = imageName.replace(".png", "_shiny.png");
-        let shinyChance = getRandomChance();
-        let baseAttack = getRandomNumber(MIN_ATTACK, MAX_BASE_ATTACK);
-        let maxAttack = getRandomNumber(MAX_BASE_ATTACK, MAX_ATTACK);
-        let baseDefense = getRandomNumber(MIN_DEFENSE, MAX_BASE_DEFENSE);
-        let maxDefense = getRandomNumber(MAX_BASE_DEFENSE, MAX_DEFENSE);
-        let baseHp = getRandomNumber(MIN_HP, MAX_BASE_HP);
-        let maxHp = getRandomNumber(MAX_BASE_HP, MAX_HP);
-        let baseCritChance = getRandomNumber(MIN_CRIT_CHANCE, MAX_BASE_CRIT_CHANCE);
-        let maxCritChance = getRandomNumber(MAX_BASE_CRIT_CHANCE, MAX_CRIT_CHANCE);
-        let baseCritMultiplier = getRandomNumber(MIN_CRIT_MULTIPLIER, MAX_BASE_CRIT_MULTIPLIER);
-        let maxCritMultiplier = getRandomNumber(MAX_BASE_CRIT_MULTIPLIER, MAX_CRIT_MULTIPLIER);
-
-        values.push([
-            chainId, 
-            elementId,
-            name, 
-            imageFile, 
-            shinyImageFile, 
-            shinyChance,
-            baseAttack,
-            maxAttack,
-            baseDefense,
-            maxDefense,
-            baseHp,
-            maxHp,
-            baseCritChance,
-            maxCritChance,
-            baseCritMultiplier,
-            maxCritMultiplier,
-        ]);
+    for(let elementId = 1; elementId <= 4; elementId++) {
+        for(let i = 0; i < nMonsters; i++) {
+            let chainId = i < (nMonsters / 2)? BSC.id : POLYGON.id;
+            let {name, file} = monsterFile.file_names[i];
+    
+            //currently unused
+            let shinyImageFile = file.replace(".png", "_shiny.png");
+            let shinyChance = getRandomChance();
+            let baseAttack = getRandomNumber(MIN_ATTACK, MAX_BASE_ATTACK);
+            let maxAttack = getRandomNumber(MAX_BASE_ATTACK, MAX_ATTACK);
+            let baseDefense = getRandomNumber(MIN_DEFENSE, MAX_BASE_DEFENSE);
+            let maxDefense = getRandomNumber(MAX_BASE_DEFENSE, MAX_DEFENSE);
+            let baseHp = getRandomNumber(MIN_HP, MAX_BASE_HP);
+            let maxHp = getRandomNumber(MAX_BASE_HP, MAX_HP);
+            let baseCritChance = getRandomNumber(MIN_CRIT_CHANCE, MAX_BASE_CRIT_CHANCE);
+            let maxCritChance = getRandomNumber(MAX_BASE_CRIT_CHANCE, MAX_CRIT_CHANCE);
+            let baseCritMultiplier = getRandomNumber(MIN_CRIT_MULTIPLIER, MAX_BASE_CRIT_MULTIPLIER);
+            let maxCritMultiplier = getRandomNumber(MAX_BASE_CRIT_MULTIPLIER, MAX_CRIT_MULTIPLIER);
+    
+            values.push([
+                chainId, 
+                elementId,
+                name, 
+                file, 
+                shinyImageFile, 
+                shinyChance,
+                baseAttack,
+                maxAttack,
+                baseDefense,
+                maxDefense,
+                baseHp,
+                maxHp,
+                baseCritChance,
+                maxCritChance,
+                baseCritMultiplier,
+                maxCritMultiplier,
+            ]);
+        }
     }
 
     let query = getInsertQuery(columns, values, table);
@@ -213,7 +209,7 @@ export const seedMonsters = async() => {
 
     let columns = ['monster_base_metadata_id', 'token_id', 'attack', 'defense', 'hp', 'crit_chance', 'crit_multiplier', 'is_shiny'];
     let values: any[][] = [];
-    let maxMonsterId = monsterFile.file_names.length;
+    let maxMonsterId = monsterFile.file_names.length * 4;
 
     for(let i = 0; i < SEED_MONSTER_COUNT; i++) {
         let monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
@@ -331,13 +327,12 @@ export const seedAreaMonsters = async() => {
 
     let columns = ['monster_base_metadata_id', 'area_id', 'stat_modifier'];
     let values: any[][] = [];
-    let maxMonsterId = monsterFile.file_names.length;
-    let maxAreaId = 2;
+    let maxMonsterId = monsterFile.file_names.length * 4;
+    let maxAreaId = 7;
 
     let currentAreaMonsters: {[areaId: string] : number[]} = {};
 
-    for(let i = 0; i < SEED_AREA_MONSTER_COUNT; i++) {
-        let monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
+    for(let monsterBaseMetadataId = 1; monsterBaseMetadataId <= maxMonsterId; monsterBaseMetadataId++) {
         let areaId = getRandomNumber(1, maxAreaId, true);
 
         if(!currentAreaMonsters || !currentAreaMonsters[areaId]) {
@@ -349,7 +344,6 @@ export const seedAreaMonsters = async() => {
             areaId = getRandomNumber(1, maxAreaId, true);
         }
         
-        console.log(currentAreaMonsters);
         currentAreaMonsters[areaId].push(monsterBaseMetadataId);
         let statModifier = getRandomNumber(2, 4);
         values.push([monsterBaseMetadataId, areaId, statModifier]);

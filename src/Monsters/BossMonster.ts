@@ -96,7 +96,8 @@ export default class BossMonster extends Base {
                 accuracy,
                 cooldown,
                 multiplier,
-                asset_file as effect_file
+                asset_file as effect_file,
+                ms.icon_file as icon_file
             FROM monster_skills ms
             JOIN monster_skill_effects mse
             ON mse.id = ms.effect_id

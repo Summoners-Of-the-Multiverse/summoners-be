@@ -52,7 +52,8 @@ export default class PlayerMonster extends Base {
                 accuracy,
                 cooldown,
                 multiplier,
-                asset_file as effect_file
+                asset_file as effect_file,
+                ms.icon_file as icon_file
             FROM monster_equipped_skills mes
             JOIN monster_skills ms
             ON ms.id = mes.monster_skill_id

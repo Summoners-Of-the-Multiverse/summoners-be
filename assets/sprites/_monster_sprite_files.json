@@ -1,1 +1,404 @@
-{"file_names":["193_fixazoid.png","195_metalwizard.png","165_apprenticelydia.png","110_archerrobin.png","176_youngprophet.png","109_warriorthorin.png","121_mechanicalviss.png","113_beastwarrior.png","106_thiefaaron.png","102_blindcrab.png","184_wandererjim.png","182_rockgoblin.png","197_musicpuppet.png","104_magicianastra.png","105_cheesyrat.png","144_oneeyedgiant.png","124_earthworm.png","160_shellcrawler.png","170_lanternfishman.png","153_impshaman.png","117_fiendchampion.png","173_treantshaman.png","107_medusa.png","199_gnollshaman.png","163_piraterupert.png","178_cavernminer.png","172_greendragon.png","167_orcwarrior.png","185_rockling.png","190_strawjack.png","115_determinedsword.png","194_leafywitch.png","158_gooeydevourer.png","152_undeadshaman.png","179_goblinshaman.png","145_tentacledmutant.png","112_fluffymutant.png","142_swordmanralph.png","157_batapig.png","164_rockprotector.png","181_deepseaguard.png","123_fiendwarrior.png","180_beepbeep.png","129_caverncrawler.png","136_centaurchampion.png","149_cavernfiend.png","128_slayerarthur.png","111_natureskeeper.png","161_werewolf.png","198_hornedbeetle.png","148_harvestermary.png","154_ancientprotector.png","169_footmanbruce.png","189_theexecutioner.png","103_barreltentacle.png","118_hermitmelchior.png","183_mosquixote.png","171_blacksmithfred.png","125_defenderjoan.png","140_chefwilliam.png","186_ironhead.png","196_barrelbot.png","143_harpyferera.png","146goat.png","133_beastchampion.png","120_hermitbelthasar.png","141_deepseamutant.png","137_berserkerhilda.png","175_caverndefender.png","188_fearlesspicker.png","155_talonedmutant.png","156_bigmouth.png","138_assassinkuuga.png","159_orcchampion.png","162_bonewyvern.png","127_wingedgnoll.png","200_doompoker.png","134_undeadminion.png","187_buggshaman.png","116_griffinglider.png","192_johnthegripper.png","177_scorpion.png","132_arachnidminion.png","139_skeletonwarrior.png","151_griffincarrier.png","119_caverndevourer.png","174_bulkdemon.png","114_fiendguard.png","166_huntertina.png","108_tuskywarrior.png","135_bardhugo.png","130_wandererjerry.png","131_granddragon.png","122_skeleton.png","101_hollowknight.png","168_desertwolf.png","126_fatsalamander.png","150_cavernquillboar.png","147_dummyplant.png","191_peculiarmagus.png"]}
+{
+    "file_names": [
+        {
+            "name": "Fixazoid",
+            "file": "193_fixazoid.png"
+        },
+        {
+            "name": "Metal Wizard",
+            "file": "195_metalwizard.png"
+        },
+        {
+            "name": "Apprentice Lydia",
+            "file": "165_apprenticelydia.png"
+        },
+        {
+            "name": "Archer Robin",
+            "file": "110_archerrobin.png"
+        },
+        {
+            "name": "Young Prophet",
+            "file": "176_youngprophet.png"
+        },
+        {
+            "name": "Warrior Thorin",
+            "file": "109_warriorthorin.png"
+        },
+        {
+            "name": "Mechanical Viss",
+            "file": "121_mechanicalviss.png"
+        },
+        {
+            "name": "Beast Warrior",
+            "file": "113_beastwarrior.png"
+        },
+        {
+            "name": "Thief Aaron",
+            "file": "106_thiefaaron.png"
+        },
+        {
+            "name": "Blind Crab",
+            "file": "102_blindcrab.png"
+        },
+        {
+            "name": "Wanderer Jim",
+            "file": "184_wandererjim.png"
+        },
+        {
+            "name": "Rock Boblin",
+            "file": "182_rockgoblin.png"
+        },
+        {
+            "name": "Music Puppet",
+            "file": "197_musicpuppet.png"
+        },
+        {
+            "name": "Magician Astra",
+            "file": "104_magicianastra.png"
+        },
+        {
+            "name": "Cheesy Rat",
+            "file": "105_cheesyrat.png"
+        },
+        {
+            "name": "One Eyed Giant",
+            "file": "144_oneeyedgiant.png"
+        },
+        {
+            "name": "Earthworm",
+            "file": "124_earthworm.png"
+        },
+        {
+            "name": "Shell Crawler",
+            "file": "160_shellcrawler.png"
+        },
+        {
+            "name": "Lantern Fishman",
+            "file": "170_lanternfishman.png"
+        },
+        {
+            "name": "Imp Shaman",
+            "file": "153_impshaman.png"
+        },
+        {
+            "name": "Fiend Champion",
+            "file": "117_fiendchampion.png"
+        },
+        {
+            "name": "Treant Shaman",
+            "file": "173_treantshaman.png"
+        },
+        {
+            "name": "Medusa",
+            "file": "107_medusa.png"
+        },
+        {
+            "name": "Gnoll Shaman",
+            "file": "199_gnollshaman.png"
+        },
+        {
+            "name": "Pirate Rupert",
+            "file": "163_piraterupert.png"
+        },
+        {
+            "name": "Cavern Miner",
+            "file": "178_cavernminer.png"
+        },
+        {
+            "name": "Green Dragon",
+            "file": "172_greendragon.png"
+        },
+        {
+            "name": "Orc Warrior",
+            "file": "167_orcwarrior.png"
+        },
+        {
+            "name": "Rockling",
+            "file": "185_rockling.png"
+        },
+        {
+            "name": "Strawjack",
+            "file": "190_strawjack.png"
+        },
+        {
+            "name": "Determined Sword",
+            "file": "115_determinedsword.png"
+        },
+        {
+            "name": "Leafy Witch",
+            "file": "194_leafywitch.png"
+        },
+        {
+            "name": "Gooey Devourer",
+            "file": "158_gooeydevourer.png"
+        },
+        {
+            "name": "Undead Shaman",
+            "file": "152_undeadshaman.png"
+        },
+        {
+            "name": "Goblin Shaman",
+            "file": "179_goblinshaman.png"
+        },
+        {
+            "name": "Tentacled Mutant",
+            "file": "145_tentacledmutant.png"
+        },
+        {
+            "name": "Fluffy Mutant",
+            "file": "112_fluffymutant.png"
+        },
+        {
+            "name": "Swordman Ralph",
+            "file": "142_swordmanralph.png"
+        },
+        {
+            "name": "Batapig",
+            "file": "157_batapig.png"
+        },
+        {
+            "name": "Rock Protector",
+            "file": "164_rockprotector.png"
+        },
+        {
+            "name": "Deep Sea Guard",
+            "file": "181_deepseaguard.png"
+        },
+        {
+            "name": "Fiend Warrior",
+            "file": "123_fiendwarrior.png"
+        },
+        {
+            "name": "Beepbeep",
+            "file": "180_beepbeep.png"
+        },
+        {
+            "name": "Cavern Crawler",
+            "file": "129_caverncrawler.png"
+        },
+        {
+            "name": "Centaur Champion",
+            "file": "136_centaurchampion.png"
+        },
+        {
+            "name": "Cavern Fiend",
+            "file": "149_cavernfiend.png"
+        },
+        {
+            "name": "Slayer Arthur",
+            "file": "128_slayerarthur.png"
+        },
+        {
+            "name": "Natures Keeper",
+            "file": "111_natureskeeper.png"
+        },
+        {
+            "name": "Werewolf",
+            "file": "161_werewolf.png"
+        },
+        {
+            "name": "Horned Beetle",
+            "file": "198_hornedbeetle.png"
+        },
+        {
+            "name": "Harvester Mary",
+            "file": "148_harvestermary.png"
+        },
+        {
+            "name": "Ancient Protector",
+            "file": "154_ancientprotector.png"
+        },
+        {
+            "name": "Footman Bruce",
+            "file": "169_footmanbruce.png"
+        },
+        {
+            "name": "The Executioner",
+            "file": "189_theexecutioner.png"
+        },
+        {
+            "name": "Barrel Tentacle",
+            "file": "103_barreltentacle.png"
+        },
+        {
+            "name": "Hermit Melchior",
+            "file": "118_hermitmelchior.png"
+        },
+        {
+            "name": "Mosquixote",
+            "file": "183_mosquixote.png"
+        },
+        {
+            "name": "Blacksmith Fred",
+            "file": "171_blacksmithfred.png"
+        },
+        {
+            "name": "Defender Joan",
+            "file": "125_defenderjoan.png"
+        },
+        {
+            "name": "Chef William",
+            "file": "140_chefwilliam.png"
+        },
+        {
+            "name": "Ironhead",
+            "file": "186_ironhead.png"
+        },
+        {
+            "name": "Barrelbot",
+            "file": "196_barrelbot.png"
+        },
+        {
+            "name": "Harpy Ferera",
+            "file": "143_harpyferera.png"
+        },
+        {
+            "name": "Normal Goat",
+            "file": "146goat.png"
+        },
+        {
+            "name": "Beast Champion",
+            "file": "133_beastchampion.png"
+        },
+        {
+            "name": "Hermit Belthasar",
+            "file": "120_hermitbelthasar.png"
+        },
+        {
+            "name": "Deep Sea Mutant",
+            "file": "141_deepseamutant.png"
+        },
+        {
+            "name": "Berserker Hilda",
+            "file": "137_berserkerhilda.png"
+        },
+        {
+            "name": "Cavern Defender",
+            "file": "175_caverndefender.png"
+        },
+        {
+            "name": "Fearless Picker",
+            "file": "188_fearlesspicker.png"
+        },
+        {
+            "name": "Taloned Mutant",
+            "file": "155_talonedmutant.png"
+        },
+        {
+            "name": "Bigmouth",
+            "file": "156_bigmouth.png"
+        },
+        {
+            "name": "Assassin Kuuga",
+            "file": "138_assassinkuuga.png"
+        },
+        {
+            "name": "Orc Champion",
+            "file": "159_orcchampion.png"
+        },
+        {
+            "name": "Bone Wyvern",
+            "file": "162_bonewyvern.png"
+        },
+        {
+            "name": "Winged Gnoll",
+            "file": "127_wingedgnoll.png"
+        },
+        {
+            "name": "Doom Poker",
+            "file": "200_doompoker.png"
+        },
+        {
+            "name": "Undead Minion",
+            "file": "134_undeadminion.png"
+        },
+        {
+            "name": "Bugg Shaman",
+            "file": "187_buggshaman.png"
+        },
+        {
+            "name": "Griffin Glider",
+            "file": "116_griffinglider.png"
+        },
+        {
+            "name": "John The Gripper",
+            "file": "192_johnthegripper.png"
+        },
+        {
+            "name": "Normal Scorpion",
+            "file": "177_scorpion.png"
+        },
+        {
+            "name": "Arachnid Minion",
+            "file": "132_arachnidminion.png"
+        },
+        {
+            "name": "Skeleton Warrior",
+            "file": "139_skeletonwarrior.png"
+        },
+        {
+            "name": "Griffin Carrier",
+            "file": "151_griffincarrier.png"
+        },
+        {
+            "name": "Cavern Devourer",
+            "file": "119_caverndevourer.png"
+        },
+        {
+            "name": "Bulk Demon",
+            "file": "174_bulkdemon.png"
+        },
+        {
+            "name": "Fiend Guard",
+            "file": "114_fiendguard.png"
+        },
+        {
+            "name": "Hunter Tina",
+            "file": "166_huntertina.png"
+        },
+        {
+            "name": "Tusky Warrior",
+            "file": "108_tuskywarrior.png"
+        },
+        {
+            "name": "Bard Hugo",
+            "file": "135_bardhugo.png"
+        },
+        {
+            "name": "Wanderer Jerry",
+            "file": "130_wandererjerry.png"
+        },
+        {
+            "name": "Grand Dragon",
+            "file": "131_granddragon.png"
+        },
+        {
+            "name": "Skeleton",
+            "file": "122_skeleton.png"
+        },
+        {
+            "name": "Hollow Knight",
+            "file": "101_hollowknight.png"
+        },
+        {
+            "name": "Desert Wolf",
+            "file": "168_desertwolf.png"
+        },
+        {
+            "name": "Fat Salamander",
+            "file": "126_fatsalamander.png"
+        },
+        {
+            "name": "Cavern Quillboar",
+            "file": "150_cavernquillboar.png"
+        },
+        {
+            "name": "Dummy Plant",
+            "file": "147_dummyplant.png"
+        },
+        {
+            "name": "Peculiar Magus",
+            "file": "191_peculiarmagus.png"
+        }
+    ]
+}

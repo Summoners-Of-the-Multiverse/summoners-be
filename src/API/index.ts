@@ -37,29 +37,35 @@ export const getStarterMonsters = async(chainId: string) => {
         throw Error("Invalid Chain");
     }
 
-    let query = `select 
-                    md.id,
-                    md.name,
-                    e.id as element_id,
-                    e.name as element_name,
-                    img_file,
-                    base_attack,
-                    max_attack,
-                    base_defense,
-                    max_defense,
-                    base_hp,
-                    max_hp,
-                    base_crit_chance,
-                    max_crit_chance,
-                    base_crit_multiplier,
-                    max_crit_multiplier,
-                    shiny_chance
-                from monster_base_metadata md
-                join elements e
-                on e.id = md.element_id
-                where chain_id='${chainId}'
-                order by md.id
-                limit 3`;
+    let query = `
+                    with starter_ids AS (
+                        select chain_id, element_id, min(id) + element_id as monster_metadata_id
+                        from monster_base_metadata
+                        group by chain_id, element_id
+                    )
+                    select 
+                        md.id,
+                        md.name,
+                        e.id as element_id,
+                        e.name as element_name,
+                        img_file,
+                        base_attack,
+                        max_attack,
+                        base_defense,
+                        max_defense,
+                        base_hp,
+                        max_hp,
+                        base_crit_chance,
+                        max_crit_chance,
+                        base_crit_multiplier,
+                        max_crit_multiplier,
+                        shiny_chance
+                    from monster_base_metadata md
+                    join elements e
+                    on e.id = md.element_id
+                    where chain_id='${chainId}' and md.id in (select monster_metadata_id from starter_ids)
+                    order by element_id, md.id
+                    limit 3`;
     let res = await db.executeQueryForResults<MonsterBaseMetadata>(query);
     return res? res : [];
 }
