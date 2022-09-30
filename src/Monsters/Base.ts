@@ -90,7 +90,7 @@ export default class Base {
     }
 
     attack = async (target: Base, skillId: string, ignoreDeath = false) => {
-        let attackRes: AttackRes = { attacks: [], totalDamage: 0, critDamage: 0, hits: 0, misses: 0 };
+        let attackRes: AttackRes = { attacks: [], cd: 0, totalDamage: 0, critDamage: 0, hits: 0, misses: 0 };
         if(this.isOnCooldown) {
             return attackRes;
         }
@@ -106,6 +106,9 @@ export default class Base {
             this.isOnCooldown = false;
             this.onOffCooldown();
         }, skill.cooldown * 1000);
+
+        //set cooldown
+        attackRes.cd = skill.cooldown;
 
         if(target.stats.defense >= this.stats.attack) {
             //no damage
@@ -180,7 +183,7 @@ export default class Base {
      */
     attackPlayer = async(playerMonsters: PlayerMonster[]) => {
         if(this.isDead()) {
-            return 0;
+            return { totalDamage: 0, cd: 0 };
         }
         let skillIndex = getRandomNumber(1, Object.keys(this.skills).length - 1, true);
         let playerMonsterIndex = getRandomNumber(1, playerMonsters.length - 1, true);
@@ -188,7 +191,7 @@ export default class Base {
         let skillId = Object.keys(this.skills)[skillIndex];
         
         let attackRes: AttackRes = await this.attack(target, skillId, true);
-        return attackRes.totalDamage;
+        return { totalDamage: attackRes.totalDamage, cd: attackRes.cd };
     }
 
     //mainly used for bosses and wild encounters

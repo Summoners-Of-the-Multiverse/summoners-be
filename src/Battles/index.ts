@@ -62,7 +62,7 @@ export class Battle {
         }
 
         catch(e: any) {
-            throw Error(e);
+            console.log(e);
         }
     }
 
@@ -237,9 +237,9 @@ export class Battle {
         }
 
         // attack random player monster
-        let totalDamage = await this.encounter!.attackPlayer(Object.values(this.playerMonsters));
+        let {totalDamage, cd} = await this.encounter!.attackPlayer(Object.values(this.playerMonsters));
         this.playerCumulativeHp -= totalDamage;
-        this._emitEvent('encounter_hit', {damage: totalDamage, playerHpLeft: this.playerCumulativeHp});
+        this._emitEvent('encounter_hit', {damage: totalDamage, cd, playerHpLeft: this.playerCumulativeHp});
 
         if(this.playerCumulativeHp < 0) {
             this._sendLoseMessage();

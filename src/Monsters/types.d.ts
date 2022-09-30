@@ -24,6 +24,7 @@ export type Attack = {
 
 export type AttackRes = { 
     attacks: Attack[];
+    cd: number;
     totalDamage: number;
     critDamage: number;
     hits: number;
