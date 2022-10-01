@@ -5,7 +5,8 @@ import { Socket, Server } from 'socket.io';
 import cors from 'cors';
 import { Battle } from './src/Battles';
 import { StartBattleParams } from './types';
-import { getAddressArea, getStarterMonsters, getStarterStatus, insertClaimedAddress, moveAddressTo } from './src/API';
+import { getMintData, getAddressArea, getStarterMonsters, getStarterStatus, insertClaimedAddress, moveAddressTo, insertMonster, insertMonsterEquippedSkills } from './src/API';
+import _ from 'lodash';
 
 //create app
 const port = 8081;
@@ -37,9 +38,9 @@ io.on('connection', (socket: Socket) => {
 
         console.log('starting battle for ' + socket.id);
         let battle: Battle | null = null;
-        let onPromptDelete = () => { 
-            battle = null; 
-            console.log('room destroyed'); 
+        let onPromptDelete = () => {
+            battle = null;
+            console.log('room destroyed');
         };
         try {
             battle = new Battle({io, socket, address, chainId, type: "wild", onPromptDelete});
@@ -84,14 +85,41 @@ app.get('/getStarterMonsters/:chainId', async function(req, res) {
     }
 });
 
-app.post('/mint', async function(req, res) {
+app.post('/premint/:chainId', async function(req, res) {
     try {
-        let address = req.body['address'];
-        await insertClaimedAddress(address);
-        return res.send("1");
+        let chainId = req.params['chainId'];
+        const data = await getMintData(chainId);
+        return res.json(data);
     }
 
-    catch {
+    catch(e) {
+        return res.status(400).send("Unknown Error");
+    }
+});
+
+app.post('/mint', async function(req, res) {
+    try {
+        // insert mob
+        const insert1: any = await insertMonster(
+            req.body.metadataId,
+            req.body.tokenId,
+            req.body.tokenHash
+        );
+        // random skills
+        const insert2 = await insertMonsterEquippedSkills(insert1.id);
+        // insert claim
+        await insertClaimedAddress(req.body.address);
+
+        // got 4 skills and mob inserted
+        if (_.has(insert1, 'id') && _.size(insert2) == 4) {
+            console.log(`success mint`);
+            return res.json({ 'success': true });
+        }
+        console.log(`failed mint`);
+        return res.json({ 'success': false });
+    }
+
+    catch(e) {
         return res.status(400).send("Unknown Error");
     }
 });

@@ -15,3 +15,9 @@ export type MonsterBaseMetadata = {
     max_crit_multiplier: number;
     shiny_chance: number;
 }
+
+export type MintData = {
+    id: number,
+    hash: string,
+    monsterId: number
+}
