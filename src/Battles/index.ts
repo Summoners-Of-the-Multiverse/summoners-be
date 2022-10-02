@@ -204,6 +204,12 @@ export class Battle {
                     }
 
                     break;
+
+                case "flee":
+                    this._sendLoseMessage();
+                    this.endBattle();
+                    return;
+
                 default:
                     break;
             }
