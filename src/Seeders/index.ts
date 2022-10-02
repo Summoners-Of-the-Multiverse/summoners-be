@@ -1,9 +1,9 @@
-import { BSC, POLYGON } from '../ChainConfigs';
+import { BSC_TEST, POLYGON_TEST } from '../ChainConfigs';
 import monsterFile from '../../assets/sprites/_monster_sprite_files.json';
 import effectFile from '../../assets/effects/_effect_files.json';
 import skillIconsFile from '../../assets/skills/_skill_icon_files.json';
 import DB from '../DB';
-import { getInsertQuery, getRandomChance, getRandomNumber } from '../../utils';
+import { getInsertQuery, getRandomChance, getRandomNumber, getHash } from '../../utils';
 
 const SEED_MONSTER_COUNT = 100;
 const SEED_EQUIPPED_SKILL_COUNT = 4;
@@ -47,21 +47,21 @@ export const seedMonsterMetadata = async() => {
     }
 
     let columns = [
-        'chain_id', 
+        'chain_id',
         'element_id',
-        'name', 
-        'img_file', 
-        'shiny_img_file', 
-        'shiny_chance', 
-        'base_attack', 
-        'max_attack', 
-        'base_defense', 
-        'max_defense', 
-        'base_hp', 
-        'max_hp', 
-        'base_crit_chance', 
-        'max_crit_chance', 
-        'base_crit_multiplier', 
+        'name',
+        'img_file',
+        'shiny_img_file',
+        'shiny_chance',
+        'base_attack',
+        'max_attack',
+        'base_defense',
+        'max_defense',
+        'base_hp',
+        'max_hp',
+        'base_crit_chance',
+        'max_crit_chance',
+        'base_crit_multiplier',
         'max_crit_multiplier',
     ];
     let values: any[][] = [];
@@ -69,9 +69,9 @@ export const seedMonsterMetadata = async() => {
 
     for(let elementId = 1; elementId <= 4; elementId++) {
         for(let i = 0; i < nMonsters; i++) {
-            let chainId = i < (nMonsters / 2)? BSC.id : POLYGON.id;
+            let chainId = i < (nMonsters / 2)? BSC_TEST.id : POLYGON_TEST.id;
             let {name, file} = monsterFile.file_names[i];
-    
+
             //currently unused
             let shinyImageFile = file.replace(".png", "_shiny.png");
             let shinyChance = getRandomChance();
@@ -85,13 +85,13 @@ export const seedMonsterMetadata = async() => {
             let maxCritChance = getRandomNumber(MAX_BASE_CRIT_CHANCE, MAX_CRIT_CHANCE);
             let baseCritMultiplier = getRandomNumber(MIN_CRIT_MULTIPLIER, MAX_BASE_CRIT_MULTIPLIER);
             let maxCritMultiplier = getRandomNumber(MAX_BASE_CRIT_MULTIPLIER, MAX_CRIT_MULTIPLIER);
-    
+
             values.push([
-                chainId, 
+                chainId,
                 elementId,
-                name, 
-                file, 
-                shinyImageFile, 
+                name,
+                file,
+                shinyImageFile,
                 shinyChance,
                 baseAttack,
                 maxAttack,
@@ -207,7 +207,7 @@ export const seedMonsters = async() => {
         return;
     }
 
-    let columns = ['monster_base_metadata_id', 'token_id', 'attack', 'defense', 'hp', 'crit_chance', 'crit_multiplier', 'is_shiny'];
+    let columns = ['monster_base_metadata_id', 'token_id', 'attack', 'defense', 'hp', 'crit_chance', 'crit_multiplier', 'is_shiny', 'hash'];
     let values: any[][] = [];
     let maxMonsterId = monsterFile.file_names.length * 4;
 
@@ -220,8 +220,9 @@ export const seedMonsters = async() => {
         let crit_chance = getRandomNumber(MIN_CRIT_CHANCE, MAX_CRIT_CHANCE);
         let crit_multiplier = getRandomNumber(MIN_CRIT_MULTIPLIER, MAX_CRIT_MULTIPLIER);
         let isShiny = getRandomNumber(0, 1, true) === 1? 'true' : 'false';
-
-        values.push([monsterBaseMetadataId, tokenId, attack, defense, hp, crit_chance, crit_multiplier, isShiny]);
+        const salt = getRandomNumber(1, 1000, true);
+        let hash = getHash(`${new Date().getTime()}_${tokenId}_${salt}`)
+        values.push([monsterBaseMetadataId, tokenId, attack, defense, hp, crit_chance, crit_multiplier, isShiny, hash]);
     }
 
     let query = getInsertQuery(columns, values, table);
@@ -343,7 +344,7 @@ export const seedAreaMonsters = async() => {
             monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
             areaId = getRandomNumber(1, maxAreaId, true);
         }
-        
+
         currentAreaMonsters[areaId].push(monsterBaseMetadataId);
         let statModifier = getRandomNumber(2, 4);
         values.push([monsterBaseMetadataId, areaId, statModifier]);
@@ -375,25 +376,25 @@ export const seedElementMultiplier = async() => {
 
     let columns = ['element_id', 'target_element_id', 'multiplier'];
     let values = [
-        ['1', '1', '0.5'], 
-        ['1', '2', '0.25'], 
-        ['1', '3', '2'], 
-        ['1', '4', '1'], 
-        
-        ['2', '1', '2'], 
-        ['2', '2', '0.5'], 
-        ['2', '3', '0.25'], 
-        ['2', '4', '1'], 
-        
-        ['3', '1', '0.25'], 
-        ['3', '2', '2'], 
-        ['3', '3', '0.5'], 
-        ['3', '4', '1'], 
-        
-        ['4', '1', '1'], 
-        ['4', '2', '1'], 
-        ['4', '3', '1'], 
-        ['4', '4', '1'], 
+        ['1', '1', '0.5'],
+        ['1', '2', '0.25'],
+        ['1', '3', '2'],
+        ['1', '4', '1'],
+
+        ['2', '1', '2'],
+        ['2', '2', '0.5'],
+        ['2', '3', '0.25'],
+        ['2', '4', '1'],
+
+        ['3', '1', '0.25'],
+        ['3', '2', '2'],
+        ['3', '3', '0.5'],
+        ['3', '4', '1'],
+
+        ['4', '1', '1'],
+        ['4', '2', '1'],
+        ['4', '3', '1'],
+        ['4', '4', '1'],
     ];
 
     let query = getInsertQuery(columns, values, table);
@@ -421,10 +422,10 @@ export const seedElements = async() => {
 
     let columns = ['name', 'icon_file'];
     let values = [
-        ['Grass', ''], 
-        ['Fire', ''], 
-        ['Water', ''], 
-        ['Chaos', ''], 
+        ['Grass', ''],
+        ['Fire', ''],
+        ['Water', ''],
+        ['Chaos', ''],
     ];
 
     let query = getInsertQuery(columns, values, table);
@@ -451,7 +452,7 @@ export const seedPlayerEquippedMonsters = async(addresses: string[]) => {
     }
     let columns = ['address', 'monster_id', 'chain_id'];
     let values: any[][] = [];
-    let chains = [BSC.id, POLYGON.id];
+    let chains = [BSC_TEST.id, POLYGON_TEST.id];
 
     let monsterIds: number[] = [];
 

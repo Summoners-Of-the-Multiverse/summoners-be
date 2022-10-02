@@ -2,6 +2,34 @@ import { ChainConfig } from "./types";
 import { ethers } from 'ethers';
 
 // chains
+export const BSC_TEST: ChainConfig = {
+    name: 'Binance Smart Chain Mainnet',
+    shortName: 'BSC TEST',
+    id: ethers.utils.hexlify(97),
+    rpc: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+    nativeCurrency: {
+        name: 'BNB',
+        decimals: 18,
+        symbol: 'BNB',
+    },
+    blockExplorerUrl: 'https://testnet.bscscan.com',
+    linkerContract: '0x57CbA50D4c4455E64829287FEAb366B9f1A56c4c',
+    nftContract: '0x797DA68eFCc022df34a634a74F2a4AcB2210c24C'
+};
+export const POLYGON_TEST: ChainConfig = {
+    name: 'Polygon Testnet',
+    shortName: 'MUMBAI',
+    id: '0x13881',
+    rpc: 'https://polygontestapi.terminet.io/rpc',
+    nativeCurrency: {
+        name: 'MATIC',
+        decimals: 18,
+        symbol: 'MATIC',
+    },
+    blockExplorerUrl: 'https://mumbai.polygonscan.com/',
+    linkerContract: '0x57CbA50D4c4455E64829287FEAb366B9f1A56c4c',
+    nftContract: '0x5C503EDc04dAa0E7E8E60069C710BdDB1681036f'
+};
 export const ETH: ChainConfig = {
     name: 'Ethereum',
     shortName: 'ETH',
@@ -12,6 +40,7 @@ export const ETH: ChainConfig = {
         decimals: 18,
         symbol: 'ETH',
     },
+    blockExplorerUrl: 'https://etherscan.io',
 };
 export const BSC: ChainConfig = {
     name: 'Binance Smart Chain Mainnet',
@@ -269,4 +298,6 @@ export const ONE: ChainConfig = {
 export const chainConfigs = [
     BSC.id,
     POLYGON.id,
+    BSC_TEST.id,
+    POLYGON_TEST.id,
 ];
