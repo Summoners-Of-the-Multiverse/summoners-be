@@ -5,7 +5,7 @@ import { Socket, Server } from 'socket.io';
 import cors from 'cors';
 import { Battle } from './src/Battles';
 import { StartBattleParams } from './types';
-import { getMintData, getAddressArea, getStarterMonsters, getStarterStatus, insertClaimedAddress, moveAddressTo, insertMonster, insertMonsterEquippedSkills } from './src/API';
+import { getMintData, getAddressArea, getStarterMonsters, getStarterStatus, insertClaimedAddress, moveAddressTo, insertMonster, insertMonsterEquippedSkills, getBattleResult, getBattleSkillsUsed } from './src/API';
 import _ from 'lodash';
 
 //create app
@@ -132,7 +132,7 @@ app.get('/area/:address', async function(req, res) {
         let area = await getAddressArea(address);
 
         if(!area) {
-            throw Error("");
+            return res.status(404).send("Cant find location");
         }
 
         return res.send({ area_id: area.area_id });
@@ -154,6 +154,25 @@ app.post('/travel', async function(req, res) {
 
     catch {
         return res.status(400).send("Invalid address or location");
+    }
+});
+
+//end battle api
+app.post('/battleResult', async function(req, res) {
+    try {
+        let address = req.body['address'];
+        let battleId = req.body['battleId'];
+        let [result, skillsUsed] = await Promise.all([getBattleResult(address, battleId), getBattleSkillsUsed(battleId)]);
+
+        if(!result) {
+            return res.status(404).send("Cant find battle result");
+        }
+
+        return res.send({result, skillsUsed});
+    }
+
+    catch (e){
+        return res.status(400).send("Bad Request");
     }
 });
 

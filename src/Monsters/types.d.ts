@@ -27,6 +27,7 @@ export type AttackRes = {
     cd: number;
     totalDamage: number;
     critDamage: number;
+    crit: number;
     hits: number;
     misses: number;
 }

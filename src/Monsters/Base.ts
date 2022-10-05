@@ -90,7 +90,7 @@ export default class Base {
     }
 
     attack = async (target: Base, skillId: string, ignoreDeath = false) => {
-        let attackRes: AttackRes = { attacks: [], cd: 0, totalDamage: 0, critDamage: 0, hits: 0, misses: 0 };
+        let attackRes: AttackRes = { attacks: [], cd: 0, totalDamage: 0, critDamage: 0, hits: 0, crit: 0, misses: 0 };
         if(this.isOnCooldown) {
             return attackRes;
         }
@@ -148,6 +148,7 @@ export default class Base {
             attackRes.hits++;
             attackRes.totalDamage += damage;
             attackRes.critDamage += isCrit? damage : 0;
+            attackRes.crit += isCrit? 1 : 0;
 
             target.receiveDamage(damage);
 

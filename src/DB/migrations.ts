@@ -294,4 +294,11 @@ export default [
         query: `ALTER TABLE monster_equipped_skills ADD created_at timestamp default current_timestamp`,
         rollback_query: `ALTER TABLE monster_equipped_skills DROP COLUMN created_at;`
     },
+    {
+        id: 32,
+        query: `ALTER TABLE pve_battle_player_skills_used ADD crits int default 0;
+                ALTER TABLE pve_battle_player_skills_used ADD total_cooldown int default 0;`,
+        rollback_query: `ALTER TABLE pve_battle_player_skills_used DROP COLUMN crits;
+                         ALTER TABLE pve_battle_player_skills_used DROP COLUMN total_cooldown;`
+    },
 ]

@@ -119,7 +119,7 @@ export class Battle {
 
             if(room === this.room) {
                 /** log battle */
-                let columns = ['pve_battle_id', 'skill_id', 'monster_id', 'total_damage_dealt', 'crit_damage_dealt', 'hits', 'misses'];
+                let columns = ['pve_battle_id', 'skill_id', 'monster_id', 'total_damage_dealt', 'crit_damage_dealt', 'hits', 'crits', 'misses', 'total_cooldown'];
                 let values: any[][] = [];
 
                 if(Object.keys(this.skillUsage).length === 0){
@@ -134,7 +134,7 @@ export class Battle {
                     }
 
                     for(const [skillId, stats] of Object.entries(skills)) {
-                        values.push([this.battle_id, skillId, monsterId, stats.damage, stats.crit_damage, stats.hit, stats.miss]);
+                        values.push([this.battle_id, skillId, monsterId, stats.damage, stats.crit_damage, stats.hit, stats.crit, stats.miss, stats.totalCd]);
                     }
                 }
 
@@ -170,7 +170,7 @@ export class Battle {
                     }
 
                     let attackRes = await playerMonster.attack(this.encounter!, skillId);
-                    let { attacks, hits, misses, totalDamage, critDamage } = attackRes;
+                    let { attacks, hits, misses, crit, totalDamage, critDamage, cd } = attackRes;
 
                     if(attacks.length === 0) {
                         //on cooldown
@@ -187,15 +187,19 @@ export class Battle {
                         this.skillUsage[monsterId][skillId] = {
                             hit: 0,
                             miss: 0,
+                            crit: 0,
                             damage: 0,
                             crit_damage: 0,
+                            totalCd: 0,
                         };
                     }
 
                     this.skillUsage[monsterId][skillId].hit += hits;
                     this.skillUsage[monsterId][skillId].miss += misses;
+                    this.skillUsage[monsterId][skillId].crit += crit;
                     this.skillUsage[monsterId][skillId].damage += totalDamage;
                     this.skillUsage[monsterId][skillId].crit_damage += critDamage;
+                    this.skillUsage[monsterId][skillId].totalCd += cd * 1000; // in ms
 
                     if(this.encounter!.isDead()) {
                         this._sendWinMessage();

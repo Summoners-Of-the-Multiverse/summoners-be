@@ -1,7 +1,7 @@
 import * as chains from "../ChainConfigs";
 import { chainConfigs } from "../ChainConfigs";
 import DB from "../DB"
-import { MonsterBaseMetadata } from "./types";
+import { BattleResult, BattleSkillsUsed, MonsterBaseMetadata } from "./types";
 import { axiosCall, getRandomNumber, getHash, generateRandomNumberChar, getInsertQuery } from "../../utils";
 import { AxiosResponse, AxiosRequestHeaders } from "axios";
 import dotenv from 'dotenv';
@@ -109,19 +109,14 @@ export const getAddressArea = async(address: string) => {
 export const insertMonster = async(metadata: number, tokenId: string, tokenHash: string) => {
     //monsters
     const MIN_ATTACK = 30;
-    const MAX_BASE_ATTACK = 40;
     const MAX_ATTACK = 50;
     const MIN_DEFENSE = 1;
-    const MAX_BASE_DEFENSE = 5;
     const MAX_DEFENSE = 10;
     const MIN_HP = 800;
-    const MAX_BASE_HP = 2000;
     const MAX_HP = 3000;
     const MIN_CRIT_CHANCE = 10;
-    const MAX_BASE_CRIT_CHANCE = 30;
     const MAX_CRIT_CHANCE = 50;
     const MIN_CRIT_MULTIPLIER = 1.25;
-    const MAX_BASE_CRIT_MULTIPLIER = 2;
     const MAX_CRIT_MULTIPLIER = 10;
 
     const db = new DB();
@@ -221,8 +216,8 @@ export const getMintData = async (chainId: string) => {
         tokenId = generateRandomNumberChar(16, 32);
         // checkDB for duplicated tokenId
         const query = `SELECT count(token_id) as count FROM monsters WHERE token_id = '${tokenId}';`;
-        const res = await db.executeQueryForSingleResult(query);
-        checkDB = Number(res.count) === 0 ? true : false;
+        const res = await db.executeQueryForSingleResult<{ count: number }>(query);
+        checkDB = Number(res?.count) === 0 ? true : false;
 
         // checkContract
         const claimed = await etherCall.checkNftClaimed(tokenId);
@@ -241,4 +236,72 @@ export const getMintData = async (chainId: string) => {
     }
 
     return mintData;
+}
+
+// battles
+export const getBattleResult = async(address: string, battleId: string) => {
+
+    let db = new DB();
+    address = sanitizeAddress(address);
+
+    //sanitize battle id
+    let battleIdInt = parseInt(battleId);
+    let query = `select 
+                    time_start,
+                    time_end,
+                    type,
+                    mb.name,
+                    mb.img_file,
+                    mb.element_id,
+                    attack,
+                    defense,
+                    hp,
+                    hp_left,
+                    crit_chance,
+                    crit_multiplier,
+                    is_shiny
+                from pve_battles b
+                join pve_battle_encounters e
+                on b.id = e.pve_battle_id
+                join monster_base_metadata mb
+                on mb.id = e.monster_base_metadata_id
+                where lower(address) = lower('${address}') 
+                and b.id = ${battleIdInt} 
+                and status = 1 -- battle ended
+                `;
+    let res = await db.executeQueryForSingleResult<BattleResult>(query);
+    return res;
+}
+
+export const getBattleSkillsUsed = async(battleId: string) => {
+
+    let db = new DB();
+
+    //sanitize battle id
+    let battleIdInt = parseInt(battleId);
+    let query = `select 
+                    mb.name as monster_name,
+                    mb.img_file as monster_img,
+                    mb.element_id as monster_element_id,
+                    ms.name as skill_name,
+                    ms.element_id,
+                    ms.icon_file as skill_icon,
+                    su.total_damage_dealt,
+                    su.crit_damage_dealt,
+                    CASE WHEN su.total_cooldown = 0 THEN 1 ELSE su.total_cooldown END as total_cooldown,
+                    su.hits,
+                    su.crits,
+                    su.misses,
+                    m.is_shiny
+                from pve_battle_player_skills_used su
+                join monsters m
+                on m.id = su.monster_id
+                join monster_base_metadata mb
+                on mb.id = m.monster_base_metadata_id
+                join monster_skills ms
+                on ms.id = su.skill_id
+                where pve_battle_id = ${battleIdInt}
+                `;
+    let res = await db.executeQueryForResults<BattleSkillsUsed>(query);
+    return res ?? [];
 }

@@ -23,8 +23,10 @@ export type SkillUsage = {
         [skillId: number]: {
             hit: number;
             miss: number;
+            crit: number;
             damage: number;
             crit_damage: number;
+            totalCd: number;
         }
     }
 }
