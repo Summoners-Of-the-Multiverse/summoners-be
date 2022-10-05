@@ -2,6 +2,8 @@ import dotenv from 'dotenv';
 import moment from 'moment';
 import path from 'path';
 dotenv.config({ path: path.join(__dirname, '.env')});
+import axios, { AxiosRequestHeaders, AxiosRequestConfig, AxiosResponse } from "axios";
+import crypto from "crypto";
 
 export function sleep(ms: number) {
     return new Promise((resolve, reject) => {
@@ -26,8 +28,8 @@ export function sleep(ms: number) {
 
 /**
  * Runs the function if it's a function, returns the result or undefined
- * @param fn 
- * @param args 
+ * @param fn
+ * @param args
  */
 export const runIfFunction = (fn: any, ...args: any): any | undefined => {
     if(typeof(fn) == 'function'){
@@ -59,7 +61,7 @@ export function ellipsizeThis(x: string, leftCharLength: number, rightCharLength
 
 /**
  * Returns the new object that has no reference to the old object to avoid mutations.
- * @param obj 
+ * @param obj
  */
 export const cloneObj = <T = any>(obj: {[key: string]: any}) => {
     return JSON.parse(JSON.stringify(obj)) as T;
@@ -163,4 +165,49 @@ export const getInsertQuery = (columns: string[], values: any[][], table: string
     }
     query += ';';
     return query;
+}
+
+export const getHash = (string: string): string => {
+    const hash = crypto.createHash('md5').update(string).digest("hex")
+    return hash;
+}
+
+export const axiosCall = async(headers: AxiosRequestHeaders, config: AxiosRequestConfig) => {
+    return new Promise((resolve, reject) => {
+        axios(config)
+        .then((res) => {
+            resolve(res.data);
+        }).catch((err) => {
+            // console.log(err);
+            resolve(null);
+        });
+    });
+}
+
+/**
+ * Generate crypto safe random number
+ * @date 2022-10-01
+ * @param { number } min
+ * @param { number } max
+ * @returns { number }
+ */
+export const getRandomIntInclusive = (min: number, max: number): number => {
+    const randomBuffer = new Uint32Array(1);
+    crypto.webcrypto.getRandomValues(randomBuffer);
+
+    let randomNumber = randomBuffer[0] / (0xffffffff + 1);
+
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(randomNumber * (max - min + 1)) + min;
+}
+
+export const generateRandomNumberChar = (min: number, max: number): string => {
+    const charLength = getRandomIntInclusive(min, max)
+    let numStr = '';
+
+    for (let index = 0; index < charLength; index++) {
+        numStr += index === 0 ? getRandomIntInclusive(0, 9).toString() : getRandomIntInclusive(1, 9).toString();
+    }
+    return numStr;
 }
