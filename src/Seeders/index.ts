@@ -4,6 +4,12 @@ import effectFile from '../../assets/effects/_effect_files.json';
 import skillIconsFile from '../../assets/skills/_skill_icon_files.json';
 import DB from '../DB';
 import { getInsertQuery, getRandomChance, getRandomNumber, getHash } from '../../utils';
+import _ from 'lodash';
+import { insertClaimedAddress, moveAddressTo } from '../API';
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.join(__dirname, '.env')});
+
 
 const SEED_MONSTER_COUNT = 100;
 const SEED_EQUIPPED_SKILL_COUNT = 4;
@@ -211,9 +217,25 @@ export const seedMonsters = async() => {
     let values: any[][] = [];
     let maxMonsterId = monsterFile.file_names.length * 4;
 
+    // hardcoded token id for wallet
+    const testerTokenId = [
+        '86191781968193887857',
+        '8732491913371194555725349',
+        '759185865262277981764',
+        '42828181683631589',
+        '58884315663292123794371',
+        '4564789365371943663',
+        '2524772864385228547875587647',
+        '85797725582595429483',
+        '9637484159855486264288128575',
+        '55335384369212563',
+        '85445382224776711299599',
+        '2696988834883429185325729'
+    ];
+
     for(let i = 0; i < SEED_MONSTER_COUNT; i++) {
         let monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
-        let tokenId = (i + 1).toString();
+        let tokenId = i < testerTokenId.length ? testerTokenId[i] : (i + 1).toString();
         let attack = getRandomNumber(MIN_ATTACK, MAX_ATTACK);
         let defense = getRandomNumber(MIN_DEFENSE, MAX_DEFENSE);
         let hp = getRandomNumber(MIN_HP, MAX_HP);
@@ -293,14 +315,14 @@ export const seedAreas = async() => {
 
     let columns = ['name'];
     let values = [
-        ['Novice Village'], 
-        ['Haunted Forest'], 
-        ['Big Grassland'], 
-        ['Volcano Sideway'], 
-        ['Sunken City'], 
-        ['Island'], 
+        ['Novice Village'],
+        ['Haunted Forest'],
+        ['Big Grassland'],
+        ['Volcano Sideway'],
+        ['Sunken City'],
+        ['Island'],
         ['Sky City'],
-        ['Underworld'], 
+        ['Underworld'],
     ];
 
     let query = getInsertQuery(columns, values, table);
@@ -481,4 +503,14 @@ export const seedPlayerEquippedMonsters = async(addresses: string[]) => {
     catch {
         return false;
     }
+}
+
+export const seedClaimedAddressAndArea = async() => {
+    const addresses = JSON.parse(process.env.SEED_ADDRESSES!);
+
+    // insert claim
+    await Promise.all(_.map(addresses, async(ad, adIndex) => {
+        await insertClaimedAddress(ad.toLowerCase());
+        await moveAddressTo(ad.toLowerCase(), 1);
+    }));
 }

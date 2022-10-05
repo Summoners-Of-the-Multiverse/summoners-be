@@ -5,7 +5,9 @@ import { Socket, Server } from 'socket.io';
 import cors from 'cors';
 import { Battle } from './src/Battles';
 import { StartBattleParams } from './types';
+
 import { getMintData, getAddressArea, getStarterMonsters, getStarterStatus, insertClaimedAddress, moveAddressTo, insertMonster, insertMonsterEquippedSkills, getBattleResult, getBattleSkillsUsed } from './src/API';
+import { getInventory } from './src/Inventory';
 import _ from 'lodash';
 
 //create app
@@ -146,8 +148,8 @@ app.get('/area/:address', async function(req, res) {
 
 app.post('/travel', async function(req, res) {
     try {
-        let address = req.body['address'];
-        let areaId = req.body['areaId'];
+        const address = req.body['address'];
+        const areaId = req.body['areaId'];
         await moveAddressTo(address, areaId);
         return res.send("1");
     }
@@ -174,6 +176,12 @@ app.post('/battleResult', async function(req, res) {
     catch (e){
         return res.status(400).send("Bad Request");
     }
+});
+
+app.post('/inventory/:chainId/:page?', async function(req, res) {
+    const address = req.body['address'];
+    const chainId = req.params['chainId'];
+    return res.send(await getInventory(address, chainId));
 });
 
 http.listen(port, () => {

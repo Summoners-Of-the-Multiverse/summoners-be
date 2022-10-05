@@ -9,9 +9,10 @@
     "migrate": "tsc && node migrate.js",
     "migrate:seed": "tsc && node migrate.js && node seed.js",
     "drop": "tsc && node drop.js",
-    "drop:ms": "tsc && node drop.js && node migrate.js && node seed.js",
+    "drop:seed": "tsc && node drop.js && node migrate.js && node seed.js",
     "seed": "tsc && node seed.js",
     "rollback": "tsc && node rollback.js",
+    "rollback:seed": "tsc && node rollback.js && node migrate.js && node seed.js",
     "dev": "nodemon --ext \"ts\" --exec \"tsc && node index.js\"  --exclude node_modules . || exit 1"
   },
   "author": "Kida",

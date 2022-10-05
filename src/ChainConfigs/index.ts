@@ -6,7 +6,7 @@ export const BSC_TEST: ChainConfig = {
     name: 'Binance Smart Chain Mainnet',
     shortName: 'BSC TEST',
     id: ethers.utils.hexlify(97),
-    rpc: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+    rpc: 'https://data-seed-prebsc-2-s1.binance.org:8545',
     nativeCurrency: {
         name: 'BNB',
         decimals: 18,
