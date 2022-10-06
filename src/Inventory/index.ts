@@ -136,7 +136,11 @@ export const getInventory = async (chainId: string, address:string) => {
                 mob.id,
                 e.name as element,
                 ms.name,
-                ms.icon_file
+                ms.icon_file,
+                ms.hits,
+                ms.accuracy,
+                ms.cooldown,
+                (ms.multiplier * 100) as damage
             FROM monsters mob
             LEFT JOIN monster_equipped_skills mes
             ON mob.id = mes.monster_id
@@ -146,6 +150,8 @@ export const getInventory = async (chainId: string, address:string) => {
             ON ms.element_id = e.id
             WHERE mob.token_id IN (${_.join(tokenIdsString, ', ')})
         `;
+
+        console.log(skillQuery);
 
         let skillRes: any = await db.executeQueryForResults(skillQuery);
         // assign skills

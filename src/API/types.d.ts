@@ -36,9 +36,11 @@ export type BattleResult = {
 	crit_chance: number;
 	crit_multiplier: number;
 	is_shiny: boolean;
+    is_captured: boolean;
 }
 
 export type BattleSkillsUsed = {
+    monster_id: number;
     monster_name: string;
     monster_img: string;
     monster_element_id: number;
@@ -51,5 +53,16 @@ export type BattleSkillsUsed = {
     crits: number;
     misses: number;
     total_cooldown: number;
+    is_shiny: boolean;
+}
+
+export type BattleEncounterMetadata = {
+    address: string;
+    monster_base_metadata_id: number;
+    attack: number;
+    defense: number;
+    hp: number;
+    crit_chance: number;
+    crit_multiplier: number;
     is_shiny: boolean;
 }
