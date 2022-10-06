@@ -296,11 +296,12 @@ export const seedAreas = async() => {
         ['Novice Village'], 
         ['Haunted Forest'], 
         ['Big Grassland'], 
+        ['Beach'], 
         ['Volcano Sideway'], 
-        ['Sunken City'], 
-        ['Island'], 
-        ['Sky City'],
         ['Underworld'], 
+        ['Sunken City'], 
+        ['Funfair'], 
+        ['Sky City'],
     ];
 
     let query = getInsertQuery(columns, values, table);
