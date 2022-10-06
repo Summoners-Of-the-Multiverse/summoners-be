@@ -5,7 +5,7 @@ import { Socket, Server } from 'socket.io';
 import cors from 'cors';
 import { Battle } from './src/Battles';
 import { StartBattleParams } from './types';
-import { getMintData, getAddressArea, getStarterMonsters, getStarterStatus, insertClaimedAddress, moveAddressTo, insertMonster, insertMonsterEquippedSkills, getBattleResult, getBattleSkillsUsed } from './src/API';
+import { getMintData, getAddressArea, getStarterMonsters, getStarterStatus, insertClaimedAddress, moveAddressTo, insertMonster, insertMonsterEquippedSkills, getBattleResult, getBattleSkillsUsed, insertMonsterUsingBattleId } from './src/API';
 import _ from 'lodash';
 
 //create app
@@ -109,6 +109,33 @@ app.post('/mint', async function(req, res) {
         const insert2 = await insertMonsterEquippedSkills(insert1.id);
         // insert claim
         await insertClaimedAddress(req.body.address);
+
+        // got 4 skills and mob inserted
+        if (_.has(insert1, 'id') && _.size(insert2) == 4) {
+            console.log(`success mint`);
+            return res.json({ 'success': true });
+        }
+        console.log(`failed mint`);
+        return res.json({ 'success': false });
+    }
+
+    catch(e) {
+        return res.status(400).send("Unknown Error");
+    }
+});
+
+app.post('/capture', async function(req, res) {
+    try {
+        // insert mob
+        const insert1: any = await insertMonsterUsingBattleId(
+            req.body.address,
+            req.body.battleId,
+            req.body.tokenId,
+            req.body.tokenHash,
+        );
+        
+        // random skills
+        const insert2 = await insertMonsterEquippedSkills(insert1.id);
 
         // got 4 skills and mob inserted
         if (_.has(insert1, 'id') && _.size(insert2) == 4) {

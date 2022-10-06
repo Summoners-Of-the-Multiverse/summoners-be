@@ -1,8 +1,8 @@
 import * as chains from "../ChainConfigs";
 import { chainConfigs } from "../ChainConfigs";
 import DB from "../DB"
-import { BattleResult, BattleSkillsUsed, MonsterBaseMetadata } from "./types";
-import { axiosCall, getRandomNumber, getHash, generateRandomNumberChar, getInsertQuery } from "../../utils";
+import { BattleEncounterMetadata, BattleResult, BattleSkillsUsed, MonsterBaseMetadata } from "./types";
+import { axiosCall, getRandomNumber, getHash, generateRandomNumberChar, getInsertQuery, getRandomChance } from "../../utils";
 import { AxiosResponse, AxiosRequestHeaders } from "axios";
 import dotenv from 'dotenv';
 import path from 'path';
@@ -108,35 +108,112 @@ export const getAddressArea = async(address: string) => {
 
 export const insertMonster = async(metadata: number, tokenId: string, tokenHash: string) => {
     //monsters
-    const MIN_ATTACK = 30;
-    const MAX_ATTACK = 50;
-    const MIN_DEFENSE = 1;
-    const MAX_DEFENSE = 10;
-    const MIN_HP = 800;
-    const MAX_HP = 3000;
-    const MIN_CRIT_CHANCE = 10;
-    const MAX_CRIT_CHANCE = 50;
-    const MIN_CRIT_MULTIPLIER = 1.25;
-    const MAX_CRIT_MULTIPLIER = 10;
-
     const db = new DB();
+    let getMonsterMetadataQuery = `select * from monster_base_metadata where id = ${metadata}`;
+    let monsterBaseMetadata = await db.executeQueryForSingleResult<MonsterBaseMetadata>(getMonsterMetadataQuery);
+
+    if(!monsterBaseMetadata) {
+        throw Error("Unknown monster");
+    }
+
     const table = 'monsters';
     const columns = ['monster_base_metadata_id', 'token_id', 'attack', 'defense', 'hp', 'crit_chance', 'crit_multiplier', 'is_shiny', 'hash'];
     let values: any[][] = [];
+
+    let {
+        base_attack,
+        max_attack,
+        base_defense,
+        max_defense,
+        base_crit_chance,
+        max_crit_chance,
+        base_crit_multiplier,
+        max_crit_multiplier,
+        base_hp,
+        max_hp,
+        shiny_chance,
+    } = monsterBaseMetadata;
+
+    let isShiny = getRandomChance() < shiny_chance;
+
     values.push([
         metadata,
         tokenId,
-        getRandomNumber(MIN_ATTACK, MAX_ATTACK),
-        getRandomNumber(MIN_DEFENSE, MAX_DEFENSE),
-        getRandomNumber(MIN_HP, MAX_HP),
-        getRandomNumber(MIN_CRIT_CHANCE, MAX_CRIT_CHANCE),
-        getRandomNumber(MIN_CRIT_MULTIPLIER, MAX_CRIT_MULTIPLIER),
-        getRandomNumber(0, 1, true) === 1? 'true' : 'false',
+        getRandomNumber(base_attack, max_attack),
+        getRandomNumber(base_defense, max_defense),
+        getRandomNumber(base_hp, max_hp),
+        getRandomNumber(base_crit_chance, max_crit_chance),
+        getRandomNumber(base_crit_multiplier, max_crit_multiplier),
+        isShiny? 'true' : 'false',
         tokenHash
     ]);
 
     const query = getInsertQuery(columns, values, table, true);
     return await db.executeQueryForSingleResult(query);
+}
+
+export const insertMonsterUsingBattleId= async(address: string, battleId: number, tokenId: string, tokenHash: string) => {
+    //monsters
+    const db = new DB();
+    address = sanitizeAddress(address);
+
+    // get battle
+    let getMonsterMetadataQuery = `select 
+	                                    address,
+                                        monster_base_metadata_id,
+                                        attack,
+                                        defense,
+                                        hp,
+                                        crit_chance,
+                                        crit_multiplier,
+                                        is_shiny
+                                    from pve_battles b
+                                    join pve_battle_encounters e
+                                    on b.id = e.pve_battle_id
+                                    where b.status = 1
+                                    and lower(b.address) = lower('${address}')
+                                    and b.id = ${battleId}`;
+    let monsterBaseMetadata = await db.executeQueryForSingleResult<BattleEncounterMetadata>(getMonsterMetadataQuery);
+
+    if(!monsterBaseMetadata) {
+        throw Error("Unknown battle");
+    }
+
+    const table = 'monsters';
+    const columns = ['monster_base_metadata_id', 'token_id', 'attack', 'defense', 'hp', 'crit_chance', 'crit_multiplier', 'is_shiny', 'hash'];
+    let values: any[][] = [];
+
+    //insert
+    let {
+        monster_base_metadata_id,
+        attack,
+        defense,
+        hp,
+        crit_chance,
+        crit_multiplier,
+        is_shiny
+    } = monsterBaseMetadata;
+
+    values.push([
+        monster_base_metadata_id,
+        tokenId,
+        attack,
+        defense,
+        hp,
+        crit_chance,
+        crit_multiplier,
+        is_shiny? 'true' : 'false',
+        tokenHash
+    ]);
+
+    const query = getInsertQuery(columns, values, table, true);
+    let res = await db.executeQueryForSingleResult(query);
+
+    //update battle captured
+    const updateQuery = `update pve_battle_encounters set is_captured = true where pve_battle_id = ${battleId}`;
+    await db.executeQuery(updateQuery);
+
+    return res;
 }
 
 export const insertMonsterEquippedSkills = async(monsterId: number) => {
@@ -259,7 +336,8 @@ export const getBattleResult = async(address: string, battleId: string) => {
                     hp_left,
                     crit_chance,
                     crit_multiplier,
-                    is_shiny
+                    is_shiny,
+                    is_captured
                 from pve_battles b
                 join pve_battle_encounters e
                 on b.id = e.pve_battle_id
@@ -280,6 +358,7 @@ export const getBattleSkillsUsed = async(battleId: string) => {
     //sanitize battle id
     let battleIdInt = parseInt(battleId);
     let query = `select 
+                    m.id as monster_id,
                     mb.name as monster_name,
                     mb.img_file as monster_img,
                     mb.element_id as monster_element_id,
