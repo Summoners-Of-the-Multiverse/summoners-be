@@ -3,6 +3,7 @@ import * as chains from "../ChainConfigs";
 import DB from "../DB"
 import {
     axiosCall,
+    getInsertQuery
 } from "../../utils";
 import path from 'path';
 import dotenv from 'dotenv';
@@ -20,7 +21,7 @@ import ContractCall from "../ContractCall";
  * @param { string } address
  * @param { string } chainId
  */
- export const getHolderNft = async (address:string, chainId: string) => {
+ export const getHolderNft = async (chainId: string, address:string) => {
     const chain: any = _.find(chains, {id: chainId});
 
     if (_.isNil(chain) || !_.has(chain, 'nftContract')) {
@@ -70,10 +71,10 @@ import ContractCall from "../ContractCall";
     return tokens;
 }
 
-export const getInventory = async (address:string, chainId: string) => {
+export const getInventory = async (chainId: string, address:string) => {
     try {
         // get all token id (without pagination for now)
-        const data = await getHolderNft(address, chainId);
+        const data = await getHolderNft(chainId, address);
 
         // handle empty result
         if (_.isEmpty(data)) {
@@ -85,7 +86,7 @@ export const getInventory = async (address:string, chainId: string) => {
         // https://github.com/ethers-io/ethers.js/issues/892
         // get token origin id (to detect cross chain token)
         // batch get original token id to search in db
-        const chain: any = _.find(chains, {id: chainId});
+        // const chain: any = _.find(chains, {id: chainId});
         const etherCall = new ContractCall(chainId);
         const tokensOrigin = await etherCall.checkBulkTokenOrigin(tokenIds);
 
@@ -161,5 +162,46 @@ export const getInventory = async (address:string, chainId: string) => {
     } catch(e) {
         console.log(e);
         return [];
+    }
+}
+
+export const equipMonster = async(chainId: string, address:string, monsterId: number) => {
+    try {
+        let db = new DB();
+        let table = 'player_monsters';
+        let checkerQuery = `SELECT COUNT(*) as count FROM ${table} WHERE chain_id = '${chainId}' AND address = '${address}'`;
+        let checkerRes = await db.executeQueryForSingleResult<{count: number}>(checkerQuery);
+
+        if(checkerRes && checkerRes.count >= 4) {
+            console.log(`Party full!`);
+            return false;
+        }
+
+        let columns = ['address', 'monster_id', 'chain_id'];
+        let values: any[][] = [];
+        values.push([address, monsterId, chainId]);
+        let query = getInsertQuery(columns, values, table);
+        query = `${query.replace(';', '')} returning id;`;
+        console.log(query);
+        const result = await db.executeQueryForSingleResult(query);
+        console.log(result);
+        return true;
+    }
+    catch {
+        return false;
+    }
+}
+
+export const unequipMonster = async(chainId: string, address:string, monsterId: number) => {
+    let db = new DB();
+    console.log(`SELECT * FROM player_monsters WHERE chain_id = '${chainId}' AND address = '${address}' AND monster_id = ${monsterId}`);
+    let removeQuery = `DELETE FROM player_monsters WHERE chain_id = '${chainId}' AND address = '${address}' AND monster_id = ${monsterId}`;
+    try {
+        const result = await db.executeQueryForSingleResult(removeQuery);
+        console.log(result);
+        return true;
+    }
+    catch {
+        return false;
     }
 }

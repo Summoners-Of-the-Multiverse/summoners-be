@@ -488,7 +488,7 @@ export const seedPlayerEquippedMonsters = async(addresses: string[]) => {
                 } while(monsterIds.includes(monsterId));
 
                 monsterIds.push(monsterId);
-                values.push([address, monsterId, chain]);
+                values.push([address.toLowerCase(), monsterId, chain]);
             }
         }
     }

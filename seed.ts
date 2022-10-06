@@ -14,7 +14,7 @@ import { seedAreaMonsters, seedAreas, seedEffects, seedElementMultiplier, seedEl
     await seedElements();
     await seedElementMultiplier();
     await seedMonsterEquippedSkills();
-    await seedPlayerEquippedMonsters(JSON.parse(process.env.SEED_ADDRESSES!));
+    // await seedPlayerEquippedMonsters(JSON.parse(process.env.SEED_ADDRESSES!));
     await seedClaimedAddressAndArea();
 
     console.log('Seed ended, press CTRL / CMD + C');

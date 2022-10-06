@@ -7,7 +7,7 @@ import { Battle } from './src/Battles';
 import { StartBattleParams } from './types';
 
 import { getMintData, getAddressArea, getStarterMonsters, getStarterStatus, insertClaimedAddress, moveAddressTo, insertMonster, insertMonsterEquippedSkills, getBattleResult, getBattleSkillsUsed } from './src/API';
-import { getInventory } from './src/Inventory';
+import { getInventory, equipMonster, unequipMonster } from './src/Inventory';
 import _ from 'lodash';
 
 //create app
@@ -178,10 +178,24 @@ app.post('/battleResult', async function(req, res) {
     }
 });
 
-app.post('/inventory/:chainId/:page?', async function(req, res) {
-    const address = req.body['address'];
-    const chainId = req.params['chainId'];
-    return res.send(await getInventory(address, chainId));
+app.post('/inventory', async function(req, res) {
+    const chainId = req.body['chainId'];
+    const address = req.body['address'].toLowerCase();
+    return res.send(await getInventory(chainId, address));
+});
+
+app.post('/equipMob', async function(req, res) {
+    const address = req.body['address'].toLowerCase();
+    const chainId = req.body['chainId'];
+    const monsterId = req.body['monsterId'];
+    return res.send(await equipMonster(chainId, address, monsterId));
+});
+
+app.post('/unequipMob', async function(req, res) {
+    const address = req.body['address'].toLowerCase();
+    const chainId = req.body['chainId'];
+    const monsterId = req.body['monsterId'];
+    return res.send(await unequipMonster(chainId, address, monsterId));
 });
 
 http.listen(port, () => {

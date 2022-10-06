@@ -301,4 +301,9 @@ export default [
         rollback_query: `ALTER TABLE pve_battle_player_skills_used DROP COLUMN crits;
                          ALTER TABLE pve_battle_player_skills_used DROP COLUMN total_cooldown;`
     },
+    {
+        id: 33,
+        query: `ALTER TABLE player_monsters ADD created_at timestamp default current_timestamp`,
+        rollback_query: `ALTER TABLE player_monsters DROP COLUMN created_at;`
+    },
 ]
