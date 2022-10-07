@@ -59,6 +59,7 @@ export class Battle {
             this._getEncounter();
             this._getPlayerMonsters();
             this._listenToRoomDestruction();
+            this._listenToPlayerLeave();
         }
 
         catch(e: any) {
@@ -100,8 +101,15 @@ export class Battle {
     }
 
     _destroyRoom = () => {
+        // disconnect sockets after battle end
         console.log('destroying room')
-        this.io.in(this.room).socketsLeave(this.room);
+        this.io.in(this.room).disconnectSockets();
+    }
+
+    _listenToPlayerLeave = () => {
+        this.client.on('disconnect', () => {
+            console.log('disconnected')
+        });
     }
 
     /**
