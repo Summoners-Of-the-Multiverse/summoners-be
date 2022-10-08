@@ -323,6 +323,7 @@ export const getBattleResults = async(address: string) => {
 
     //sanitize battle id
     let query = `select 
+                    b.id as battle_id,
                     time_start,
                     time_end,
                     type,
@@ -344,9 +345,10 @@ export const getBattleResults = async(address: string) => {
                 on mb.id = e.monster_base_metadata_id
                 where lower(address) = lower('${address}') 
                 and status = 1 -- battle ended
+                order by b.id desc
                 `;
-    let res = await db.executeQueryForSingleResult<BattleResult[]>(query);
-    return res;
+    let res = await db.executeQueryForResults<BattleResult>(query);
+    return res ?? [];
 }
 
 export const getBattleResult = async(address: string, battleId: string) => {
@@ -357,6 +359,7 @@ export const getBattleResult = async(address: string, battleId: string) => {
     //sanitize battle id
     let battleIdInt = parseInt(battleId);
     let query = `select 
+                    b.id as battle_id,
                     time_start,
                     time_end,
                     type,
