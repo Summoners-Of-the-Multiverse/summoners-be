@@ -316,6 +316,39 @@ export const getMintData = async (chainId: string) => {
 }
 
 // battles
+export const getBattleResults = async(address: string) => {
+
+    let db = new DB();
+    address = sanitizeAddress(address);
+
+    //sanitize battle id
+    let query = `select 
+                    time_start,
+                    time_end,
+                    type,
+                    mb.name,
+                    mb.img_file,
+                    mb.element_id,
+                    attack,
+                    defense,
+                    hp,
+                    hp_left,
+                    crit_chance,
+                    crit_multiplier,
+                    is_shiny,
+                    is_captured
+                from pve_battles b
+                join pve_battle_encounters e
+                on b.id = e.pve_battle_id
+                join monster_base_metadata mb
+                on mb.id = e.monster_base_metadata_id
+                where lower(address) = lower('${address}') 
+                and status = 1 -- battle ended
+                `;
+    let res = await db.executeQueryForSingleResult<BattleResult[]>(query);
+    return res;
+}
+
 export const getBattleResult = async(address: string, battleId: string) => {
 
     let db = new DB();

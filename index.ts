@@ -5,7 +5,7 @@ import { Socket, Server } from 'socket.io';
 import cors from 'cors';
 import { Battle } from './src/Battles';
 import { StartBattleParams } from './types';
-import { getMintData, getAddressArea, getStarterMonsters, getStarterStatus, insertClaimedAddress, moveAddressTo, insertMonster, insertMonsterEquippedSkills, getBattleResult, getBattleSkillsUsed, insertMonsterUsingBattleId } from './src/API';
+import { getMintData, getAddressArea, getStarterMonsters, getStarterStatus, insertClaimedAddress, moveAddressTo, insertMonster, insertMonsterEquippedSkills, getBattleResult, getBattleSkillsUsed, insertMonsterUsingBattleId, getBattleResults } from './src/API';
 import _ from 'lodash';
 
 //create app
@@ -185,6 +185,23 @@ app.post('/travel', async function(req, res) {
 });
 
 //end battle api
+app.post('/battleResults', async function(req, res) {
+    try {
+        let address = req.body['address'];
+        let results = await getBattleResults(address);
+
+        if(!results) {
+            return res.status(404).send("Cant find battle result");
+        }
+
+        return res.send(results);
+    }
+
+    catch (e){
+        return res.status(400).send("Bad Request");
+    }
+});
+
 app.post('/battleResult', async function(req, res) {
     try {
         let address = req.body['address'];
