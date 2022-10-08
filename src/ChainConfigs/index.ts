@@ -20,7 +20,9 @@ export const POLYGON_TEST: ChainConfig = {
     name: 'Polygon Testnet',
     shortName: 'MUMBAI',
     id: '0x13881',
-    rpc: 'https://polygontestapi.terminet.io/rpc',
+    // rpc: 'https://rpc-mumbai.matic.today/',
+    // rpc: 'https://polygontestapi.terminet.io/rpc',
+    rpc: 'https://rpc-mumbai.maticvigil.com/',
     nativeCurrency: {
         name: 'MATIC',
         decimals: 18,

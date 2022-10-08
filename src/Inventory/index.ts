@@ -38,35 +38,44 @@ import ContractCall from "../ContractCall";
     // store all tokens
     let tokens: any = [];
     let nextCursor = null;
-    do {
-        let config: any = {
-            method: 'GET',
-            url: `https://deep-index.moralis.io/api/v2/${ address }/nft`,
-            params: {
-                chain: chainId,
-                format: 'decimal',
-                token_addresses: chain.nftContract,
-                // limit: 10
-            },
-            headers: headers
-        }
 
-        // append next cursor if not empty
-        if (!_.isNil(nextCursor)) {
-            config.params['cursor'] = nextCursor;
-        }
+    // erc721 contract (native token)
+    // linker contract(bridged token)
+    const contractAddresses = [chain.nftContract, chain.linkerContract];
 
-        const data: any = await axiosCall(headers, config);
+    for (let index = 0; index < contractAddresses.length; index++) {
+        const contract = contractAddresses[index];
 
-        // merge all result
-        if (!_.isNil(data)) {
-            tokens = _.concat(tokens, data.result);
+        do {
+            let config: any = {
+                method: 'GET',
+                url: `https://deep-index.moralis.io/api/v2/${ address }/nft`,
+                params: {
+                    chain: chainId,
+                    format: 'decimal',
+                    token_addresses: contract,
+                    // limit: 10
+                },
+                headers: headers
+            }
 
-            // while next page still available
-            nextCursor = data.cursor;
-        }
+            // append next cursor if not empty
+            if (!_.isNil(nextCursor)) {
+                config.params['cursor'] = nextCursor;
+            }
 
-    } while(!_.isNil(nextCursor));
+            const data: any = await axiosCall(headers, config);
+
+            // merge all result
+            if (!_.isNil(data)) {
+                tokens = _.concat(tokens, data.result);
+
+                // while next page still available
+                nextCursor = data.cursor;
+            }
+
+        } while(!_.isNil(nextCursor));
+    }
 
     return tokens;
 }
@@ -74,7 +83,8 @@ import ContractCall from "../ContractCall";
 export const getInventory = async (chainId: string, address:string) => {
     try {
         // get all token id (without pagination for now)
-        const data = await getHolderNft(chainId, address);
+        // get all token from erc721 & linker
+        let data = await getHolderNft(chainId, address);
         // const polygon = await getHolderNft('0x13881', address);
 
         // handle empty result
@@ -124,7 +134,7 @@ export const getInventory = async (chainId: string, address:string) => {
             ON mob.monster_base_metadata_id = mbm.id
             LEFT JOIN elements e
             ON mbm.element_id = e.id
-            WHERE mob.token_id IN (${_.join(tokenIdsString, ', ')}) AND mbm.chain_id = '${chainId}'
+            WHERE mob.token_id IN (${_.join(tokenIdsString, ', ')})
         `;
 
         let mobRes: any = await db.executeQueryForResults(mobQuery);
