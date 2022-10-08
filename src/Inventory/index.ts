@@ -101,8 +101,15 @@ export const getInventory = async (chainId: string, address:string) => {
         const etherCall = new ContractCall(chainId);
         const tokensOrigin = await etherCall.checkBulkTokenOrigin(tokenIds);
 
+        // map curr token id with origin token id (before bridge)
+        let tokenMapping: {[key: string]: string} = {};
+
+        // take token id only and form where query string
         let tokenIdsString = await Promise.all(
-            _.map(tokensOrigin, async(tk) => {
+            _.map(tokensOrigin, async(tk, tkIndex) => {
+                // map curr token <-> origin token
+                const currId = tokenIds[tkIndex];
+                tokenMapping[tk[1].toString()] = currId;
                 // const tokenOrigin = await etherCall.checkTokenOrigin(tk);
                 // console.log(tokenOrigin);
                 return `'${tk[1].toString()}'`;
@@ -166,6 +173,7 @@ export const getInventory = async (chainId: string, address:string) => {
         let skillRes: any = await db.executeQueryForResults(skillQuery);
         // assign skills
         _.map(mobRes, (ms, index) => {
+            mobRes[index].curr_token_id = tokenMapping[mobRes[index].token_id];
             mobRes[index].attack = mobRes[index].attack.toFixed(0);
             mobRes[index].defense = mobRes[index].defense.toFixed(0);
             mobRes[index].hp = mobRes[index].hp.toFixed(0);
