@@ -35,6 +35,9 @@ const MAX_ACCURACY = 100;
 const MIN_SKILL_MULTIPLIER = 0.25;
 const MAX_SKILL_MULTIPLIER = 5;
 
+//areas
+const MAX_AREA_ID = 9;
+
 export const seedMonsterMetadata = async() => {
     let db = new DB();
     let table = 'monster_base_metadata';
@@ -330,12 +333,11 @@ export const seedAreaMonsters = async() => {
     let columns = ['monster_base_metadata_id', 'area_id', 'stat_modifier'];
     let values: any[][] = [];
     let maxMonsterId = monsterFile.file_names.length * 4;
-    let maxAreaId = 7;
 
     let currentAreaMonsters: {[areaId: string] : number[]} = {};
 
     for(let monsterBaseMetadataId = 1; monsterBaseMetadataId <= maxMonsterId; monsterBaseMetadataId++) {
-        let areaId = getRandomNumber(1, maxAreaId, true);
+        let areaId = getRandomNumber(1, MAX_AREA_ID, true);
 
         if(!currentAreaMonsters || !currentAreaMonsters[areaId]) {
             currentAreaMonsters[areaId] = [];
@@ -343,7 +345,7 @@ export const seedAreaMonsters = async() => {
 
         while(currentAreaMonsters[areaId] && currentAreaMonsters[areaId].length > 0 && currentAreaMonsters[areaId].includes(monsterBaseMetadataId)) {
             monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
-            areaId = getRandomNumber(1, maxAreaId, true);
+            areaId = getRandomNumber(1, MAX_AREA_ID, true);
         }
 
         currentAreaMonsters[areaId].push(monsterBaseMetadataId);
