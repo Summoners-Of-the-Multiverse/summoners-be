@@ -75,6 +75,7 @@ export const getInventory = async (chainId: string, address:string) => {
     try {
         // get all token id (without pagination for now)
         const data = await getHolderNft(chainId, address);
+        // const polygon = await getHolderNft('0x13881', address);
 
         // handle empty result
         if (_.isEmpty(data)) {
@@ -135,6 +136,7 @@ export const getInventory = async (chainId: string, address:string) => {
             SELECT
                 mob.id,
                 e.name as element,
+                e.id as element_id,
                 ms.name,
                 ms.icon_file,
                 ms.hits,
@@ -151,15 +153,22 @@ export const getInventory = async (chainId: string, address:string) => {
             WHERE mob.token_id IN (${_.join(tokenIdsString, ', ')})
         `;
 
-        console.log(skillQuery);
-
         let skillRes: any = await db.executeQueryForResults(skillQuery);
         // assign skills
         _.map(mobRes, (ms, index) => {
+            mobRes[index].attack = mobRes[index].attack.toFixed(0);
+            mobRes[index].defense = mobRes[index].defense.toFixed(0);
+            mobRes[index].hp = mobRes[index].hp.toFixed(0);
+            mobRes[index].crit_chance = mobRes[index].crit_chance.toFixed(0);
+
             mobRes[index]['skills'] = _.filter(skillRes, {'id': ms.id });
 
             // remove unused id
             _.map(mobRes[index]['skills'], (currMs, currIndex) => {
+                mobRes[index]['skills'][currIndex].hits = mobRes[index]['skills'][currIndex].hits.toFixed(0);
+                mobRes[index]['skills'][currIndex].accuracy = mobRes[index]['skills'][currIndex].accuracy.toFixed(0);
+                mobRes[index]['skills'][currIndex].cooldown = mobRes[index]['skills'][currIndex].cooldown.toFixed(0);
+                mobRes[index]['skills'][currIndex].damage = mobRes[index]['skills'][currIndex].damage.toFixed(0);
                 mobRes[index]['skills'][currIndex] = _.omit(mobRes[index]['skills'][currIndex], 'id');
             })
         });
