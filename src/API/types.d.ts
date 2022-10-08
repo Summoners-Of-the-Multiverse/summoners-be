@@ -43,6 +43,11 @@ export type BattleSkillsUsed = {
     monster_id: number;
     monster_name: string;
     monster_img: string;
+    monster_attack: number;
+    monster_defense: number;
+    monster_hp: number;
+    monster_crit_chance: number;
+    monster_crit_multiplier: number;
     monster_element_id: number;
     skill_name: string;
     element_id: number;

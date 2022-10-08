@@ -59,6 +59,7 @@ export class Battle {
             this._getEncounter();
             this._getPlayerMonsters();
             this._listenToRoomDestruction();
+            this._listenToPlayerLeave();
         }
 
         catch(e: any) {
@@ -100,8 +101,15 @@ export class Battle {
     }
 
     _destroyRoom = () => {
+        // disconnect sockets after battle end
         console.log('destroying room')
-        this.io.in(this.room).socketsLeave(this.room);
+        this.io.in(this.room).disconnectSockets();
+    }
+
+    _listenToPlayerLeave = () => {
+        this.client.on('disconnect', () => {
+            console.log('disconnected')
+        });
     }
 
     /**
@@ -109,15 +117,15 @@ export class Battle {
      */
     _listenToRoomDestruction = () => {
         this.io.sockets.adapter.on('delete-room', async(room) => {
-
             //prevent dupes
             if(this.hasLogged) {
                 return;
             }
 
-            this.hasLogged = true;
-
             if(room === this.room) {
+                this.hasLogged = true;
+                this.battleEnded = true;
+
                 /** log battle */
                 let columns = ['pve_battle_id', 'skill_id', 'monster_id', 'total_damage_dealt', 'crit_damage_dealt', 'hits', 'crits', 'misses', 'total_cooldown'];
                 let values: any[][] = [];

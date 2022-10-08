@@ -400,7 +400,12 @@ export const getBattleSkillsUsed = async(battleId: string) => {
                     su.hits,
                     su.crits,
                     su.misses,
-                    m.is_shiny
+                    m.is_shiny,
+					m.attack as monster_attack,
+					m.defense as monster_defense,
+					m.hp as monster_hp,
+					m.crit_chance as monster_crit_chance,
+					m.crit_multiplier as monster_crit_multiplier
                 from pve_battle_player_skills_used su
                 join monsters m
                 on m.id = su.monster_id
