@@ -114,6 +114,8 @@ app.post('/mint', async function(req, res) {
 
         // got 4 skills and mob inserted
         if (_.has(insert1, 'id') && _.size(insert2) == 4) {
+            // auto equip mint mob
+            await equipMonster(req.body.chainId, req.body.address, insert1.id);
             console.log(`success mint`);
             return res.json({ 'success': true });
         }
