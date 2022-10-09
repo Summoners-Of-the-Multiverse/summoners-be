@@ -3,7 +3,8 @@ import monsterFile from '../../assets/sprites/_monster_sprite_files.json';
 import effectFile from '../../assets/effects/_effect_files.json';
 import skillIconsFile from '../../assets/skills/_skill_icon_files.json';
 import DB from '../DB';
-import { getInsertQuery, getRandomChance, getRandomNumber, getHash } from '../../utils';
+import { getInsertQuery, getRandomNumber, getHash } from '../../utils';
+import { MonsterBaseMetadata } from '../API/types';
 
 const SEED_MONSTER_COUNT = 100;
 const SEED_EQUIPPED_SKILL_COUNT = 4;
@@ -77,7 +78,7 @@ export const seedMonsterMetadata = async() => {
 
             //currently unused
             let shinyImageFile = file.replace(".png", "_shiny.png");
-            let shinyChance = getRandomChance();
+            let shinyChance = getRandomNumber(0, 5); //5% chance max
             let baseAttack = getRandomNumber(MIN_ATTACK, MAX_BASE_ATTACK);
             let maxAttack = getRandomNumber(MAX_BASE_ATTACK, MAX_ATTACK);
             let baseDefense = getRandomNumber(MIN_DEFENSE, MAX_BASE_DEFENSE);
@@ -330,40 +331,41 @@ export const seedAreaMonsters = async() => {
         return;
     }
 
-    let columns = ['monster_base_metadata_id', 'area_id', 'stat_modifier'];
-    let values: any[][] = [];
-    let maxMonsterId = monsterFile.file_names.length * 4;
+    let chains = [BSC_TEST.id, POLYGON_TEST.id];
 
-    let currentAreaMonsters: {[areaId: string] : number[]} = {};
+    for(let chain of chains) {
+        let monstersQuery = `select * from monster_base_metadata where chain_id = '${chain}' order by max_hp, max_attack, max_defense`;
+        let monsterRes = await db.executeQueryForResults<MonsterBaseMetadata>(monstersQuery);
 
-    for(let monsterBaseMetadataId = 1; monsterBaseMetadataId <= maxMonsterId; monsterBaseMetadataId++) {
-        let areaId = getRandomNumber(1, MAX_AREA_ID, true);
-
-        if(!currentAreaMonsters || !currentAreaMonsters[areaId]) {
-            currentAreaMonsters[areaId] = [];
+        if(!monsterRes) {
+            return false;
         }
-
-        while(currentAreaMonsters[areaId] && currentAreaMonsters[areaId].length > 0 && currentAreaMonsters[areaId].includes(monsterBaseMetadataId)) {
-            monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
-            areaId = getRandomNumber(1, MAX_AREA_ID, true);
+    
+        let columns = ['monster_base_metadata_id', 'area_id', 'stat_modifier'];
+        let values: any[][] = [];
+        let numMonsters = monsterRes.length;
+    
+        for(let areaId = 1; areaId <= MAX_AREA_ID; areaId++) {
+            // area per monster + if area id = 1 then add remainder
+            let thisAreaNumMonter = Math.floor(numMonsters / MAX_AREA_ID) + (areaId === 1? numMonsters % MAX_AREA_ID : 0);
+            for(let index = 0; index < thisAreaNumMonter; index++) {
+                values.push([monsterRes[index].id, areaId, '1']);
+            }
         }
-
-        currentAreaMonsters[areaId].push(monsterBaseMetadataId);
-        let statModifier = getRandomNumber(2, 4);
-        values.push([monsterBaseMetadataId, areaId, statModifier]);
+    
+    
+        let query = getInsertQuery(columns, values, table);
+        try {
+            await db.executeQuery(query);
+        }
+    
+        catch (e) {
+            console.log('Error seeding area monsters');
+            return false;
+        }
     }
-
-
-    let query = getInsertQuery(columns, values, table);
-    try {
-        await db.executeQuery(query);
-        console.log(`Seeded ${table}`);
-        return true;
-    }
-
-    catch {
-        return false;
-    }
+    console.log(`Seeded ${table}`);
+    return true;
 }
 
 export const seedElementMultiplier = async() => {

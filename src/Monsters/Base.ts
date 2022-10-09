@@ -2,12 +2,7 @@ import { MonsterEquippedSkillById, MonsterStats } from "../../types/Monster";
 import { cloneObj, getRandomChance, getRandomNumber} from "../../utils";
 import DB from "../DB";
 import PlayerMonster from "./PlayerMonster";
-import { Attack, AttackRes, BaseMonsterConstructor } from "./types";
-
-export const bossMultiplier = 5;
-export const bossHpMultiplier = 50;
-export const wildMultiplier = 2;
-export const wildHpMultiplier = 5;
+import { AttackRes, BaseMonsterConstructor } from "./types";
 
 export default class Base {
 
@@ -33,6 +28,8 @@ export default class Base {
     onOffCooldown;
 
     isOnCooldown = false;
+    statMultiplier = 1;
+    hpMultiplier = 1;
     
     constructor({ onOffCooldown }: BaseMonsterConstructor) {
         this.onOffCooldown = onOffCooldown;
@@ -68,20 +65,13 @@ export default class Base {
      */
     getBaseStats = () => {
         let stats = cloneObj<MonsterStats>(this.stats);
-        switch(stats.type) {
-            case "boss":
-                stats.attack = stats.attack / bossMultiplier;
-                stats.defense = stats.defense / bossMultiplier;
-                stats.hp = stats.hp / (bossMultiplier * bossHpMultiplier);
-                break;
-            case "wild":
-                stats.attack = stats.attack / wildMultiplier;
-                stats.defense = stats.defense / wildMultiplier;
-                stats.hp = stats.hp / (wildMultiplier * wildHpMultiplier);
-                break;
-            default:
-                break;
+
+        if(stats.type !== "player") {
+            stats.attack = stats.attack / this.statMultiplier;
+            stats.defense = stats.defense / this.statMultiplier;
+            stats.hp = stats.hp / (this.hpMultiplier);
         }
+        
         return stats;
     }
 

@@ -14,6 +14,7 @@ export interface PlayerMonsterConstructor extends BaseMonsterConstructor {
 export interface MonsterConstructor extends BaseMonsterConstructor {
     onLoad: (monster: BossMonster | WildMonster) => void; 
     metadataId: number;
+    areaId: number;
 }
 
 export type Attack = {

@@ -1,17 +1,23 @@
 import { MonsterBaseMetadata, MonsterEquippedSkill, MonsterEquippedSkillById, MonsterStats } from "../../types/Monster";
 import { getRandomChance, getRandomNumber } from "../../utils";
-import Base, { bossHpMultiplier, bossMultiplier } from "./Base";
+import Base from "./Base";
 import { MonsterConstructor } from "./types";
+
+const statMultiplier = 5;
+const hpMultiplier = 15;
+const areaMultiplier = 0.9;
 
 export default class BossMonster extends Base {
 
     onLoad;
     metadataId;
+    areaId;
 
-    constructor({ onLoad, onOffCooldown, metadataId }: MonsterConstructor) {
+    constructor({ onLoad, onOffCooldown, metadataId, areaId }: MonsterConstructor) {
         super({ onOffCooldown });
         this.metadataId = metadataId;
         this.onLoad = onLoad;
+        this.areaId = areaId;
         this.applyStats();
     }
 
@@ -70,6 +76,11 @@ export default class BossMonster extends Base {
             type: "boss",
         };
 
+        //get statMultiplier
+        //gets harder the higher the area level
+        let currentStatMultiplier = statMultiplier * this.areaId * areaMultiplier;
+        let currentHpMultiplier = hpMultiplier * this.areaId * areaMultiplier;
+
         stats.name = name;
 
         //no need to check for shiny file
@@ -78,12 +89,15 @@ export default class BossMonster extends Base {
         stats.element_id = element_id;
         stats.element_file = element_file;
         stats.element_name = element_name;
-        stats.attack = getRandomNumber(base_attack, max_attack, true) * bossMultiplier;
-        stats.defense = getRandomNumber(base_defense, max_defense, true) * bossMultiplier;
-        stats.hp = getRandomNumber(base_hp, max_hp, true) * bossMultiplier * bossHpMultiplier;
+        stats.attack = getRandomNumber(base_attack, max_attack, true) * currentStatMultiplier;
+        stats.defense = getRandomNumber(base_defense, max_defense, true) * currentStatMultiplier;
+        stats.hp = getRandomNumber(base_hp, max_hp, true) * currentHpMultiplier;
         stats.hp_left = stats.hp;
         stats.crit_chance = getRandomNumber(base_crit_chance, max_crit_chance, true);
         stats.crit_multiplier = getRandomNumber(base_crit_multiplier, max_crit_multiplier);
+
+        this.hpMultiplier = currentHpMultiplier;
+        this.statMultiplier = currentStatMultiplier;
 
         let allSkillsQuery = `
             SELECT 

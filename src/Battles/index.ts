@@ -303,10 +303,20 @@ export class Battle {
 
         switch(this.type) {
             case "boss":
-                this.encounter = new BossMonster({ onOffCooldown: this._onEncounterOffCooldown, onLoad: this._onEncounterLoad, metadataId: randomMonsterMetadataId });
+                this.encounter = new BossMonster({ 
+                    onOffCooldown: this._onEncounterOffCooldown, 
+                    onLoad: this._onEncounterLoad, 
+                    metadataId: randomMonsterMetadataId,
+                    areaId: this.areaId
+                });
                 break;
             case "wild":
-                this.encounter = new WildMonster({ onOffCooldown: this._onEncounterOffCooldown, onLoad: this._onEncounterLoad, metadataId: randomMonsterMetadataId });
+                this.encounter = new WildMonster({ 
+                    onOffCooldown: this._onEncounterOffCooldown, 
+                    onLoad: this._onEncounterLoad, 
+                    metadataId: randomMonsterMetadataId,
+                    areaId: this.areaId
+                });
                 break;
             default:
                 throw Error("Unknown type");
