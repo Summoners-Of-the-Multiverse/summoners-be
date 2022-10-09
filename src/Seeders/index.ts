@@ -1,4 +1,4 @@
-import { BSC_TEST, POLYGON_TEST } from '../ChainConfigs';
+import { AVAX_TEST, BSC_TEST, POLYGON_TEST } from '../ChainConfigs';
 import monsterFile from '../../assets/sprites/_monster_sprite_files.json';
 import effectFile from '../../assets/effects/_effect_files.json';
 import skillIconsFile from '../../assets/skills/_skill_icon_files.json';
@@ -72,10 +72,11 @@ export const seedMonsterMetadata = async() => {
     ];
     let values: any[][] = [];
     let nMonsters = monsterFile.file_names.length;
+    const chainIds = [BSC_TEST.id, POLYGON_TEST.id, AVAX_TEST.id]
 
     for(let elementId = 1; elementId <= 4; elementId++) {
         for(let i = 0; i < nMonsters; i++) {
-            let chainId = i < (nMonsters / 2)? BSC_TEST.id : POLYGON_TEST.id;
+            let chainId = chainIds[i%3];
             let {name, file} = monsterFile.file_names[i];
 
             //currently unused
@@ -218,20 +219,7 @@ export const seedMonsters = async() => {
     let maxMonsterId = monsterFile.file_names.length * 4;
 
     // hardcoded token id for wallet
-    const testerTokenId = [
-        '86191781968193887857',
-        '8732491913371194555725349',
-        '759185865262277981764',
-        '42828181683631589',
-        '58884315663292123794371',
-        '4564789365371943663',
-        '2524772864385228547875587647',
-        '85797725582595429483',
-        '9637484159855486264288128575',
-        '55335384369212563',
-        '85445382224776711299599',
-        '2696988834883429185325729'
-    ];
+    const testerTokenId: any = [];
 
     for(let i = 0; i < SEED_MONSTER_COUNT; i++) {
         let monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
@@ -475,7 +463,7 @@ export const seedPlayerEquippedMonsters = async(addresses: string[]) => {
     }
     let columns = ['address', 'monster_id', 'chain_id'];
     let values: any[][] = [];
-    let chains = [BSC_TEST.id, POLYGON_TEST.id];
+    let chains = [BSC_TEST.id, POLYGON_TEST.id, AVAX_TEST.id];
 
     let monsterIds: number[] = [];
 

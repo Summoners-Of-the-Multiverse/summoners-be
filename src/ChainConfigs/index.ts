@@ -13,8 +13,8 @@ export const BSC_TEST: ChainConfig = {
         symbol: 'BNB',
     },
     blockExplorerUrl: 'https://testnet.bscscan.com',
-    linkerContract: '0x57CbA50D4c4455E64829287FEAb366B9f1A56c4c',
-    nftContract: '0x797DA68eFCc022df34a634a74F2a4AcB2210c24C'
+    linkerContract: '0xB94f603DB09497ee63E320f219585880349dC25f',
+    nftContract: '0xd4d6784025f7518DE86E397cdE4522a2056bf6dc'
 };
 export const POLYGON_TEST: ChainConfig = {
     name: 'Polygon Testnet',
@@ -29,8 +29,22 @@ export const POLYGON_TEST: ChainConfig = {
         symbol: 'MATIC',
     },
     blockExplorerUrl: 'https://mumbai.polygonscan.com/',
-    linkerContract: '0x57CbA50D4c4455E64829287FEAb366B9f1A56c4c',
-    nftContract: '0x5C503EDc04dAa0E7E8E60069C710BdDB1681036f'
+    linkerContract: '0xB94f603DB09497ee63E320f219585880349dC25f',
+    nftContract: '0x8692157ebE00265F0CE39728110A1FBdF46767E0'
+};
+export const AVAX_TEST: ChainConfig = {
+    name: 'Avalanche C-Chain Testnet',
+    shortName: 'AVAX',
+    id: '0xa869',
+    rpc: 'https://api.avax-test.network/ext/bc/C/rpc',
+    nativeCurrency: {
+        name: 'AVAX',
+        decimals: 18,
+        symbol: 'AVAX',
+    },
+    blockExplorerUrl: 'https://testnet.snowtrace.io/',
+    linkerContract: '0xB94f603DB09497ee63E320f219585880349dC25f',
+    nftContract: '0x587a55a9a0473346C0a64244721D7F89e6cc16FF'
 };
 export const ETH: ChainConfig = {
     name: 'Ethereum',
@@ -59,7 +73,7 @@ export const BSC: ChainConfig = {
 export const AVAX: ChainConfig = {
     name: 'Avalanche C-Chain',
     shortName: 'AVAX',
-    id: ethers.utils.hexlify(43114),
+    id: '0xa86a',
     rpc: 'https://api.avax.network/ext/bc/C/rpc',
     nativeCurrency: {
         name: 'AVAX',
