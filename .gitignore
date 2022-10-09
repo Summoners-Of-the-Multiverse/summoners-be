@@ -9,3 +9,4 @@ package-lock.json
 .platforms
 
 test.ts
+public/*
