@@ -5,8 +5,8 @@ import { ChainConfig } from "../ChainConfigs/types";
 import dotenv from 'dotenv';
 import path from 'path';
 dotenv.config({ path: path.join(__dirname, '../../.env')});
-import ERC721 from '../abi/Sotm721.json';
-import NftLinker from '../abi/SotmNftLinker.json';
+import ERC721 from '../ABI/Sotm721.json';
+import NftLinker from '../ABI/SotmNftLinker.json';
 
 export default class ContractCall {
     provider: ethers.providers.JsonRpcProvider;
