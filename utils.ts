@@ -207,7 +207,7 @@ export const generateRandomNumberChar = (min: number, max: number): string => {
     let numStr = '';
 
     for (let index = 0; index < charLength; index++) {
-        numStr += index === 0 ? getRandomIntInclusive(0, 9).toString() : getRandomIntInclusive(1, 9).toString();
+        numStr += index === 0 ? getRandomIntInclusive(1, 9).toString() : getRandomIntInclusive(0, 9).toString();
     }
     return numStr;
 }

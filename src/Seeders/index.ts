@@ -1,9 +1,15 @@
-import { BSC_TEST, POLYGON_TEST } from '../ChainConfigs';
+import { AVAX_TEST, BSC_TEST, POLYGON_TEST } from '../ChainConfigs';
 import monsterFile from '../../assets/sprites/_monster_sprite_files.json';
 import effectFile from '../../assets/effects/_effect_files.json';
 import skillIconsFile from '../../assets/skills/_skill_icon_files.json';
 import DB from '../DB';
+
 import { getInsertQuery, getRandomNumber, getHash } from '../../utils';
+import _ from 'lodash';
+import { insertClaimedAddress, moveAddressTo } from '../API';
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.join(__dirname, '.env')});
 import { MonsterBaseMetadata } from '../API/types';
 
 const SEED_MONSTER_COUNT = 100;
@@ -70,10 +76,11 @@ export const seedMonsterMetadata = async() => {
     ];
     let values: any[][] = [];
     let nMonsters = monsterFile.file_names.length;
+    const chainIds = [BSC_TEST.id, POLYGON_TEST.id, AVAX_TEST.id]
 
     for(let elementId = 1; elementId <= 4; elementId++) {
         for(let i = 0; i < nMonsters; i++) {
-            let chainId = i < (nMonsters / 2)? BSC_TEST.id : POLYGON_TEST.id;
+            let chainId = chainIds[i%3];
             let {name, file} = monsterFile.file_names[i];
 
             //currently unused
@@ -215,9 +222,12 @@ export const seedMonsters = async() => {
     let values: any[][] = [];
     let maxMonsterId = monsterFile.file_names.length * 4;
 
+    // hardcoded token id for wallet
+    const testerTokenId: any = [];
+
     for(let i = 0; i < SEED_MONSTER_COUNT; i++) {
         let monsterBaseMetadataId = getRandomNumber(1, maxMonsterId, true);
-        let tokenId = (i + 1).toString();
+        let tokenId = i < testerTokenId.length ? testerTokenId[i] : (i + 1).toString();
         let attack = getRandomNumber(MIN_ATTACK, MAX_ATTACK);
         let defense = getRandomNumber(MIN_DEFENSE, MAX_DEFENSE);
         let hp = getRandomNumber(MIN_HP, MAX_HP);
@@ -297,13 +307,13 @@ export const seedAreas = async() => {
 
     let columns = ['name'];
     let values = [
-        ['Novice Village'], 
-        ['Haunted Forest'], 
-        ['Big Grassland'], 
-        ['Volcano Sideway'], 
-        ['Underworld'], 
+        ['Novice Village'],
+        ['Haunted Forest'],
+        ['Big Grassland'],
+        ['Volcano Sideway'],
+        ['Underworld'],
         ['Sunken City'],
-        ['Island'], 
+        ['Island'],
         ['Sky City'],
     ];
 
@@ -339,11 +349,11 @@ export const seedAreaMonsters = async() => {
         if(!monsterRes) {
             return false;
         }
-    
+
         let columns = ['monster_base_metadata_id', 'area_id', 'stat_modifier'];
         let values: any[][] = [];
         let numMonsters = monsterRes.length;
-    
+
         for(let areaId = 1; areaId <= MAX_AREA_ID; areaId++) {
             // area per monster + if area id = 1 then add remainder
             let thisAreaNumMonter = Math.floor(numMonsters / MAX_AREA_ID) + (areaId === 1? numMonsters % MAX_AREA_ID : 0);
@@ -351,13 +361,13 @@ export const seedAreaMonsters = async() => {
                 values.push([monsterRes[index].id, areaId, '1']);
             }
         }
-    
-    
+
+
         let query = getInsertQuery(columns, values, table);
         try {
             await db.executeQuery(query);
         }
-    
+
         catch (e) {
             console.log('Error seeding area monsters');
             return false;
@@ -456,7 +466,7 @@ export const seedPlayerEquippedMonsters = async(addresses: string[]) => {
     }
     let columns = ['address', 'monster_id', 'chain_id'];
     let values: any[][] = [];
-    let chains = [BSC_TEST.id, POLYGON_TEST.id];
+    let chains = [BSC_TEST.id, POLYGON_TEST.id, AVAX_TEST.id];
 
     let monsterIds: number[] = [];
 
@@ -470,7 +480,7 @@ export const seedPlayerEquippedMonsters = async(addresses: string[]) => {
                 } while(monsterIds.includes(monsterId));
 
                 monsterIds.push(monsterId);
-                values.push([address, monsterId, chain]);
+                values.push([address.toLowerCase(), monsterId, chain]);
             }
         }
     }
@@ -485,4 +495,14 @@ export const seedPlayerEquippedMonsters = async(addresses: string[]) => {
     catch {
         return false;
     }
+}
+
+export const seedClaimedAddressAndArea = async() => {
+    const addresses = JSON.parse(process.env.SEED_ADDRESSES!);
+
+    // insert claim
+    await Promise.all(_.map(addresses, async(ad, adIndex) => {
+        await insertClaimedAddress(ad.toLowerCase());
+        await moveAddressTo(ad.toLowerCase(), 1);
+    }));
 }

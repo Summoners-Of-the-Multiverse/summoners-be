@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 dotenv.config({ path: path.join(__dirname, '.env')});
 
-import { seedAreaMonsters, seedAreas, seedEffects, seedElementMultiplier, seedElements, seedMonsterMetadata, seedMonsterEquippedSkills, seedMonsters, seedMonsterSkills, seedPlayerEquippedMonsters } from './src/Seeders';
+import { seedAreaMonsters, seedAreas, seedEffects, seedElementMultiplier, seedElements, seedMonsterMetadata, seedMonsterEquippedSkills, seedMonsters, seedMonsterSkills, seedPlayerEquippedMonsters, seedClaimedAddressAndArea } from './src/Seeders';
 
 (async() => {
     await seedMonsterMetadata();
@@ -14,7 +14,8 @@ import { seedAreaMonsters, seedAreas, seedEffects, seedElementMultiplier, seedEl
     await seedElements();
     await seedElementMultiplier();
     await seedMonsterEquippedSkills();
-    await seedPlayerEquippedMonsters(JSON.parse(process.env.SEED_ADDRESSES!));
+    // await seedPlayerEquippedMonsters(JSON.parse(process.env.SEED_ADDRESSES!));
+    await seedClaimedAddressAndArea();
 
     console.log('Seed ended, press CTRL / CMD + C');
     return;

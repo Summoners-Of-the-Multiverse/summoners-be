@@ -5,8 +5,10 @@ import { Socket, Server } from 'socket.io';
 import cors from 'cors';
 import { Battle } from './src/Battles';
 import { StartBattleParams } from './types';
+import { getInventory, equipMonster, unequipMonster, addBridgeLog, getBridgeLog } from './src/Inventory';
 import { getMintData, getAddressArea, getStarterMonsters, getStarterStatus, insertClaimedAddress, moveAddressTo, insertMonster, insertMonsterEquippedSkills, getBattleResult, getBattleSkillsUsed, insertMonsterUsingBattleId, getBattleResults } from './src/API';
 import _ from 'lodash';
+import { bridgeLog } from './src/Inventory/types';
 
 //create app
 const port = 8081;
@@ -112,6 +114,8 @@ app.post('/mint', async function(req, res) {
 
         // got 4 skills and mob inserted
         if (_.has(insert1, 'id') && _.size(insert2) == 4) {
+            // auto equip mint mob
+            await equipMonster(req.body.chainId, req.body.address, insert1.id);
             console.log(`success mint`);
             return res.json({ 'success': true });
         }
@@ -133,7 +137,7 @@ app.post('/capture', async function(req, res) {
             req.body.tokenId,
             req.body.tokenHash,
         );
-        
+
         // random skills
         const insert2 = await insertMonsterEquippedSkills(insert1.id);
 
@@ -173,8 +177,8 @@ app.get('/area/:address', async function(req, res) {
 
 app.post('/travel', async function(req, res) {
     try {
-        let address = req.body['address'];
-        let areaId = req.body['areaId'];
+        const address = req.body['address'];
+        const areaId = req.body['areaId'];
         await moveAddressTo(address, areaId);
         return res.send("1");
     }
@@ -218,6 +222,46 @@ app.post('/battleResult', async function(req, res) {
     catch (e){
         return res.status(400).send("Bad Request");
     }
+});
+
+app.post('/inventory', async function(req, res) {
+    const chainId = req.body['chainId'];
+    const address = req.body['address'].toLowerCase();
+    return res.send(await getInventory(chainId, address));
+});
+
+app.post('/equipMob', async function(req, res) {
+    const address = req.body['address'].toLowerCase();
+    const chainId = req.body['chainId'];
+    const monsterId = req.body['monsterId'];
+    return res.send(await equipMonster(chainId, address, monsterId));
+});
+
+app.post('/unequipMob', async function(req, res) {
+    const address = req.body['address'].toLowerCase();
+    const chainId = req.body['chainId'];
+    const monsterId = req.body['monsterId'];
+    return res.send(await unequipMonster(chainId, address, monsterId));
+});
+
+app.post('/bridgeLog', async function(req, res) {
+    const data: bridgeLog = {
+        monster_id: req.body['monsterId'],
+        token_id: req.body['tokenId'],
+        address: req.body['address'].toLowerCase(),
+        // linker_contract: req.body['linkerContract'],
+        from_chain_id: req.body['fromChainId'],
+        to_chain_id: req.body['toChainId'],
+        tx_hash: req.body['txHash']
+    };
+    const result = await addBridgeLog(data);
+    return res.json(result);
+});
+
+app.get('/bridgeLog/:address/:offset?', async function(req, res) {
+    let address = req.params['address'].toLowerCase();
+    const result = await getBridgeLog(address);
+    return res.json(result);
 });
 
 http.listen(port, () => {

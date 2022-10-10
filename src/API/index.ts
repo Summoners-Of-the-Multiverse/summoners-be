@@ -1,34 +1,44 @@
 import * as chains from "../ChainConfigs";
+
 import { chainConfigs } from "../ChainConfigs";
 import DB from "../DB"
 import { BattleEncounterMetadata, BattleResult, BattleSkillsUsed, MonsterBaseMetadata } from "./types";
-import { axiosCall, getRandomNumber, getHash, generateRandomNumberChar, getInsertQuery, getRandomChance } from "../../utils";
 import { AxiosResponse, AxiosRequestHeaders } from "axios";
+import {
+    axiosCall,
+    getRandomNumber,
+    getHash,
+    generateRandomNumberChar,
+    getInsertQuery,
+    getRandomChance
+} from "../../utils";
 import dotenv from 'dotenv';
 import path from 'path';
-dotenv.config({ path: path.join(__dirname, '../../.env')});
+dotenv.config({
+    path: path.join(__dirname, '../../.env')
+});
 import _ from "lodash";
 import ContractCall from '../ContractCall';
 import effectFile from '../../assets/effects/_effect_files.json';
 
 const ETHEREUM_ADDRESS_LENGTH = 42;
 
-const sanitizeAddress = (address: string) => {
+const sanitizeAddress = (address : string) => {
     address = address.replace(/ /g, "");
     address = address.trim();
 
-    if(address.length !== ETHEREUM_ADDRESS_LENGTH) {
+    if (address.length !== ETHEREUM_ADDRESS_LENGTH) {
         throw Error("Invalid Address");
     }
 
-    if(address.substring(0, 2) !== '0x') {
+    if (address.substring(0, 2) !== '0x') {
         throw Error("Invalid Address");
     }
 
     return address;
 }
 
-export const getStarterStatus = async(address: string) => {
+export const getStarterStatus = async (address : string) => {
     let db = new DB();
 
     address = sanitizeAddress(address);
@@ -39,10 +49,10 @@ export const getStarterStatus = async(address: string) => {
     return res && res.length !== 0;
 }
 
-export const getStarterMonsters = async(chainId: string) => {
+export const getStarterMonsters = async (chainId : string) => {
     let db = new DB();
 
-    if(!chainConfigs.includes(chainId)) {
+    if (!chainConfigs.includes(chainId)) {
         throw Error("Invalid Chain");
     }
 
@@ -76,18 +86,18 @@ export const getStarterMonsters = async(chainId: string) => {
                     order by element_id, md.id
                     limit 3`;
     let res = await db.executeQueryForResults<MonsterBaseMetadata>(query);
-    return res? res : [];
+    return res ? res : [];
 }
 
-export const insertClaimedAddress = async(address: string) => {
+export const insertClaimedAddress = async (address : string) => {
     let db = new DB();
     address = sanitizeAddress(address);
     let query = `insert into claimed_addresses (address) values ('${address}'); insert into player_locations (address) values ('${address}');`;
     await db.executeQuery(query);
 }
 
-export const moveAddressTo = async(address: string, areaId: number) => {
-    if(!areaId) {
+export const moveAddressTo = async (address : string, areaId : number) => {
+    if (!areaId) {
         throw Error("Invalid location");
     }
 
@@ -97,17 +107,18 @@ export const moveAddressTo = async(address: string, areaId: number) => {
     await db.executeQuery(query);
 }
 
-export const getAddressArea = async(address: string) => {
+export const getAddressArea = async (address : string) => {
 
     let db = new DB();
     address = sanitizeAddress(address);
     let query = `select area_id from player_locations where address = '${address}'`;
+
     return await db.executeQueryForSingleResult<{ area_id: number }>(query);
 
 }
 
+
 export const insertMonster = async(metadata: number, tokenId: string, tokenHash: string) => {
-    //monsters
     const db = new DB();
     let getMonsterMetadataQuery = `select * from monster_base_metadata where id = ${metadata}`;
     let monsterBaseMetadata = await db.executeQueryForSingleResult<MonsterBaseMetadata>(getMonsterMetadataQuery);
@@ -117,7 +128,17 @@ export const insertMonster = async(metadata: number, tokenId: string, tokenHash:
     }
 
     const table = 'monsters';
-    const columns = ['monster_base_metadata_id', 'token_id', 'attack', 'defense', 'hp', 'crit_chance', 'crit_multiplier', 'is_shiny', 'hash'];
+    const columns = [
+        'monster_base_metadata_id',
+        'token_id',
+        'attack',
+        'defense',
+        'hp',
+        'crit_chance',
+        'crit_multiplier',
+        'is_shiny',
+        'hash'
+    ];
     let values: any[][] = [];
 
     let {
@@ -158,7 +179,7 @@ export const insertMonsterUsingBattleId= async(address: string, battleId: number
     address = sanitizeAddress(address);
 
     // get battle
-    let getMonsterMetadataQuery = `select 
+    let getMonsterMetadataQuery = `select
 	                                    address,
                                         monster_base_metadata_id,
                                         attack,
@@ -227,12 +248,12 @@ export const insertMonsterEquippedSkills = async(monsterId: number) => {
 
     let skills: number[] = [];
 
-    for(let j = 0; j < SEED_EQUIPPED_SKILL_COUNT; j++) {
+    for (let j = 0; j < SEED_EQUIPPED_SKILL_COUNT; j++) {
         let skillId = 0;
 
         do {
             skillId = getRandomNumber(1, nEffects, true);
-        } while(skills.includes(skillId));
+        } while (skills.includes(skillId));
 
         skills.push(skillId);
         values.push([monsterId, skillId]);
@@ -248,29 +269,35 @@ export const insertMonsterEquippedSkills = async(monsterId: number) => {
  * @date 2022-09-29
  * @param { string } chainId
  */
-export const getAllNft = async(chainId: string) => {
-    // get chain nft contract address
-    const chain: any = _.find(chains, { id: chainId });
+export const getAllNft = async (chainId : string) => { // get chain nft contract address
+    const chain: any = _.find(chains, {id: chainId});
 
-    if(_.isNil(chain) || !_.has(chain, 'nftContract')) {
+    if (_.isNil(chain) || !_.has(chain, 'nftContract')) {
         throw Error("Invalid Chain");
     }
 
-    const headers: AxiosRequestHeaders =  {
+    const headers: AxiosRequestHeaders = {
         'accept': 'application/json',
-        'X-API-Key': `${process.env.MORALIS}`
+        'X-API-Key': `${
+            process.env.MORALIS
+        }`
     };
 
     const config = {
         method: 'GET',
-        url: `https://deep-index.moralis.io/api/v2/nft/${chain.nftContract}`,
-        params: {chain: chainId, format: 'decimal'},
+        url: `https://deep-index.moralis.io/api/v2/nft/${
+            chain.nftContract
+        }`,
+        params: {
+            chain: chainId,
+            format: 'decimal'
+        },
         headers: headers
     }
 
     const data: any = await axiosCall(headers, config);
 
-    return JSON.stringify(data.result);
+    return data.result;
 }
 
 /**
@@ -278,18 +305,17 @@ export const getAllNft = async(chainId: string) => {
  * @date 2022-09-29
  * @param { string } chainId
  */
-export const getMintData = async (chainId: string) => {
-    // get new id from mysql
+export const getMintData = async (chainId : string) => { // get new id from mysql
     let db = new DB();
 
     // initiate ethers
     const etherCall = new ContractCall(chainId);
-    let checkDB = false, checkContract = false;
+    let checkDB = false,
+        checkContract = false;
     let tokenId;
 
     // check if token id claimed
-    while(!checkDB || !checkContract) {
-        // generate token between 16 ~ 32 chars
+    while (! checkDB || ! checkContract) { // generate token between 16 ~ 32 chars
         tokenId = generateRandomNumberChar(16, 32);
         // checkDB for duplicated tokenId
         const query = `SELECT count(token_id) as count FROM monsters WHERE token_id = '${tokenId}';`;
@@ -304,7 +330,9 @@ export const getMintData = async (chainId: string) => {
 
     // get next meta hash/id (unixtime + nextTokenId + random number salt)
     const salt = getRandomNumber(1, 1000, true);
-    const hash = getHash(`${new Date().getTime()}_${tokenId}_${salt}`);
+    const hash = getHash(`${
+        new Date().getTime()
+    }_${tokenId}_${salt}`);
 
     // const returnData
     const mintData = {
@@ -322,7 +350,7 @@ export const getBattleResults = async(address: string) => {
     address = sanitizeAddress(address);
 
     //sanitize battle id
-    let query = `select 
+    let query = `select
                     b.id as battle_id,
                     time_start,
                     time_end,
@@ -343,7 +371,7 @@ export const getBattleResults = async(address: string) => {
                 on b.id = e.pve_battle_id
                 join monster_base_metadata mb
                 on mb.id = e.monster_base_metadata_id
-                where lower(address) = lower('${address}') 
+                where lower(address) = lower('${address}')
                 and status = 1 -- battle ended
                 order by b.id desc
                 `;
@@ -358,7 +386,8 @@ export const getBattleResult = async(address: string, battleId: string) => {
 
     //sanitize battle id
     let battleIdInt = parseInt(battleId);
-    let query = `select 
+
+    let query = `select
                     b.id as battle_id,
                     time_start,
                     time_end,
@@ -379,8 +408,8 @@ export const getBattleResult = async(address: string, battleId: string) => {
                 on b.id = e.pve_battle_id
                 join monster_base_metadata mb
                 on mb.id = e.monster_base_metadata_id
-                where lower(address) = lower('${address}') 
-                and b.id = ${battleIdInt} 
+                where lower(address) = lower('${address}')
+                and b.id = ${battleIdInt}
                 and status = 1 -- battle ended
                 `;
     let res = await db.executeQueryForSingleResult<BattleResult>(query);
@@ -393,7 +422,8 @@ export const getBattleSkillsUsed = async(battleId: string) => {
 
     //sanitize battle id
     let battleIdInt = parseInt(battleId);
-    let query = `select 
+
+    let query = `select
                     m.id as monster_id,
                     mb.name as monster_name,
                     mb.img_file as monster_img,
