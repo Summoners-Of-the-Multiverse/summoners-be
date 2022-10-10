@@ -11,9 +11,9 @@ dotenv.config({
     path: path.join(__dirname, '../../.env')
 });
 import _ from "lodash";
-import { PromisifyBatchRequest } from './batchRequest';
-import NftLinker from '../abi/SotmNftLinker.json';
 import ContractCall from "../ContractCall";
+import { bridgeLog } from "./types";
+const isTestnet = process.env.CHAIN_ENV === "testnet" ? true : false;
 
 /**
  * Get wallet's nft (on-chain) - haven't match with db record
@@ -25,7 +25,8 @@ import ContractCall from "../ContractCall";
     const chain: any = _.find(chains, {id: chainId});
 
     if (_.isNil(chain) || !_.has(chain, 'nftContract')) {
-        throw Error("Invalid Chain");
+        // throw Error("Invalid Chain");
+        return [];
     }
 
     const headers: AxiosRequestHeaders = {
@@ -103,18 +104,39 @@ export const getInventory = async (chainId: string, address:string) => {
 
         // map curr token id with origin token id (before bridge)
         let tokenMapping: {[key: string]: string} = {};
+        let tokenOriginChain: {[key: string]: string} = {};
+        // store token id without quote (for update monster_bridge_log)
+        let tokenIdsRaw: string[] = [];
 
         // take token id only and form where query string
         let tokenIdsString = await Promise.all(
             _.map(tokensOrigin, async(tk, tkIndex) => {
                 // map curr token <-> origin token
                 const currId = tokenIds[tkIndex];
+
+                switch (tk[0]) {
+                    case 'Polygon':
+                        tokenOriginChain[tk[1].toString()] = isTestnet ? chains.POLYGON_TEST.id : chains.POLYGON.id;
+                        break;
+                    case 'BNB Chain':
+                        tokenOriginChain[tk[1].toString()] = isTestnet ? chains.BSC_TEST.id : chains.BSC.id;
+                        break;
+                    case 'Avalanche':
+                        tokenOriginChain[tk[1].toString()] = isTestnet ? chains.AVAX_TEST.id : chains.AVAX.id;
+                        break;
+                    default:
+                        break;
+                }
                 tokenMapping[tk[1].toString()] = currId;
                 // const tokenOrigin = await etherCall.checkTokenOrigin(tk);
                 // console.log(tokenOrigin);
+                tokenIdsRaw.push(tk[1].toString());
                 return `'${tk[1].toString()}'`;
             })
         );
+
+        // update those bridged record if they found in this chain
+        updateBridgeLog(tokenIdsRaw, chainId);
 
         // only select token_id that recorded in db
         // select mob data & equipped
@@ -145,6 +167,10 @@ export const getInventory = async (chainId: string, address:string) => {
         `;
 
         let mobRes: any = await db.executeQueryForResults(mobQuery);
+
+        if (_.isEmpty(mobRes)) {
+            return [];
+        }
 
         // after filter chain and first query punya token id
         tokenIdsString = _.map(mobRes, tk => `'${tk.token_id}'`);
@@ -178,6 +204,7 @@ export const getInventory = async (chainId: string, address:string) => {
             mobRes[index].defense = mobRes[index].defense.toFixed(0);
             mobRes[index].hp = mobRes[index].hp.toFixed(0);
             mobRes[index].crit_chance = mobRes[index].crit_chance.toFixed(0);
+            mobRes[index].origin_chain = tokenOriginChain[mobRes[index].token_id];
 
             mobRes[index]['skills'] = _.filter(skillRes, {'id': ms.id });
 
@@ -215,9 +242,8 @@ export const equipMonster = async(chainId: string, address:string, monsterId: nu
         values.push([address, monsterId, chainId]);
         let query = getInsertQuery(columns, values, table);
         query = `${query.replace(';', '')} returning id;`;
-        console.log(query);
         const result = await db.executeQueryForSingleResult(query);
-        console.log(result);
+
         return true;
     }
     catch {
@@ -227,14 +253,47 @@ export const equipMonster = async(chainId: string, address:string, monsterId: nu
 
 export const unequipMonster = async(chainId: string, address:string, monsterId: number) => {
     let db = new DB();
-    console.log(`SELECT * FROM player_monsters WHERE chain_id = '${chainId}' AND address = '${address}' AND monster_id = ${monsterId}`);
     let removeQuery = `DELETE FROM player_monsters WHERE chain_id = '${chainId}' AND address = '${address}' AND monster_id = ${monsterId}`;
     try {
         const result = await db.executeQueryForSingleResult(removeQuery);
-        console.log(result);
+
         return true;
     }
     catch {
         return false;
     }
+}
+
+export const addBridgeLog = async(data: bridgeLog) => {
+    let db = new DB();
+    let table = 'monster_bridge_log';
+    let columns = ['monster_id', 'token_id', 'address', 'from_chain_id', 'to_chain_id', 'tx_hash'];
+    let values: any[][] = [];
+
+    values.push([data['monster_id'], data['token_id'], data['address'], data['from_chain_id'], data['to_chain_id'], data['tx_hash']]);
+
+    let query = getInsertQuery(columns, values, table);
+    query = `${query.replace(';', '')} returning id;`;
+
+    const result = await db.executeQueryForSingleResult(query);
+
+    return true;
+}
+
+export const getBridgeLog = async(address:string, offset=0, limit=5) => {
+    let db = new DB();
+    let query = `SELECT * FROM monster_bridge_log WHERE address = '${address}' ORDER BY id DESC LIMIT ${limit} OFFSET ${offset}`;
+    const result = await db.executeQueryForResults(query);
+
+    return result;
+}
+
+export const updateBridgeLog = async(tokenIds: string[], chainId: string) => {
+    let db = new DB();
+    let query = '';
+    for (let token of tokenIds) {
+        query += `UPDATE monster_bridge_log SET status = 1, updated_at = CURRENT_TIMESTAMP WHERE token_id = '${token}' AND to_chain_id = '${chainId}' AND status = 0;`
+    }
+    const result = await db.executeQuery(query);
+    return true;
 }

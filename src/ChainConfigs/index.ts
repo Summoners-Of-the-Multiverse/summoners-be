@@ -316,4 +316,6 @@ export const chainConfigs = [
     POLYGON.id,
     BSC_TEST.id,
     POLYGON_TEST.id,
+    AVAX.id,
+    AVAX_TEST.id
 ];

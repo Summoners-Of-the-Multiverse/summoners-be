@@ -5,9 +5,10 @@ import { Socket, Server } from 'socket.io';
 import cors from 'cors';
 import { Battle } from './src/Battles';
 import { StartBattleParams } from './types';
-import { getInventory, equipMonster, unequipMonster } from './src/Inventory';
+import { getInventory, equipMonster, unequipMonster, addBridgeLog, getBridgeLog } from './src/Inventory';
 import { getMintData, getAddressArea, getStarterMonsters, getStarterStatus, insertClaimedAddress, moveAddressTo, insertMonster, insertMonsterEquippedSkills, getBattleResult, getBattleSkillsUsed, insertMonsterUsingBattleId, getBattleResults } from './src/API';
 import _ from 'lodash';
+import { bridgeLog } from './src/Inventory/types';
 
 //create app
 const port = 8081;
@@ -241,6 +242,26 @@ app.post('/unequipMob', async function(req, res) {
     const chainId = req.body['chainId'];
     const monsterId = req.body['monsterId'];
     return res.send(await unequipMonster(chainId, address, monsterId));
+});
+
+app.post('/bridgeLog', async function(req, res) {
+    const data: bridgeLog = {
+        monster_id: req.body['monsterId'],
+        token_id: req.body['tokenId'],
+        address: req.body['address'].toLowerCase(),
+        // linker_contract: req.body['linkerContract'],
+        from_chain_id: req.body['fromChainId'],
+        to_chain_id: req.body['toChainId'],
+        tx_hash: req.body['txHash']
+    };
+    const result = await addBridgeLog(data);
+    return res.json(result);
+});
+
+app.get('/bridgeLog/:address/:offset?', async function(req, res) {
+    let address = req.params['address'].toLowerCase();
+    const result = await getBridgeLog(address);
+    return res.json(result);
 });
 
 http.listen(port, () => {

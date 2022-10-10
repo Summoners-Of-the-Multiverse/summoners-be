@@ -306,4 +306,38 @@ export default [
         query: `ALTER TABLE player_monsters ADD created_at timestamp default current_timestamp`,
         rollback_query: `ALTER TABLE player_monsters DROP COLUMN created_at;`
     },
+    {
+        id: 34,
+        query: `
+            CREATE TABLE monster_bridge_log (
+                id serial PRIMARY KEY,
+                monster_id int not null,
+                token_id varchar(50) not null,
+                address varchar(50) not null,
+                from_chain_id varchar(50) not null,
+                to_chain_id varchar(50) not null,
+                tx_hash varchar(100) not null,
+                status smallint not null default 0,
+                created_at timestamp default current_timestamp,
+                updated_at timestamp
+            );`,
+        rollback_query: `DROP TABLE monster_bridge_log;`
+    },
+    {
+        id: 35,
+        query: `
+            CREATE INDEX monster_bridge_log_monster_id ON monster_bridge_log (monster_id);
+            CREATE INDEX monster_bridge_log_token_id ON monster_bridge_log (token_id);
+            CREATE INDEX monster_bridge_log_to_chain_id ON monster_bridge_log (to_chain_id);
+            CREATE INDEX monster_bridge_log_status ON monster_bridge_log (status);
+            CREATE INDEX monster_bridge_log_address ON monster_bridge_log (address);
+        `,
+        rollback_query: `
+            DROP INDEX monster_bridge_log_monster_id;
+            DROP INDEX monster_bridge_log_token_id;
+            DROP INDEX monster_bridge_log_to_chain_id;
+            DROP INDEX monster_bridge_log_status;
+            DROP INDEX monster_bridge_log_address;
+        `
+    }
 ]
