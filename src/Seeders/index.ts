@@ -37,7 +37,7 @@ const MIN_SKILL_MULTIPLIER = 0.25;
 const MAX_SKILL_MULTIPLIER = 5;
 
 //areas
-const MAX_AREA_ID = 9;
+const MAX_AREA_ID = 8;
 
 export const seedMonsterMetadata = async() => {
     let db = new DB();
@@ -300,11 +300,10 @@ export const seedAreas = async() => {
         ['Novice Village'], 
         ['Haunted Forest'], 
         ['Big Grassland'], 
-        ['Beach'], 
         ['Volcano Sideway'], 
         ['Underworld'], 
-        ['Sunken City'], 
-        ['Funfair'], 
+        ['Sunken City'],
+        ['Island'], 
         ['Sky City'],
     ];
 
