@@ -176,8 +176,10 @@ export default class Base {
         if(this.isDead()) {
             return { totalDamage: 0, cd: 0 };
         }
-        let skillIndex = getRandomNumber(1, Object.keys(this.skills).length - 1, true);
-        let playerMonsterIndex = getRandomNumber(1, playerMonsters.length - 1, true);
+        
+        let skillIndex = getRandomNumber(0, Object.keys(this.skills).length - 1, true);
+        let playerMonsterIndex = getRandomNumber(0, playerMonsters.length - 1, true);
+        
         let target = playerMonsters[playerMonsterIndex];
         let skillId = Object.keys(this.skills)[skillIndex];
         
