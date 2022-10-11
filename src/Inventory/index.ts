@@ -151,6 +151,7 @@ export const getInventory = async (chainId: string, address:string) => {
                 on m.id = pm.monster_id
                 where lower(address) = lower('${address}')
                 and   m.token_id not in ('${tokenIds.join("','")}')
+                and   lower(pm.chain_id) = lower('${chainId}')
             )
             delete from player_monsters
             where id in (select missing_id from missing_monsters)
