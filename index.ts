@@ -9,9 +9,13 @@ import { getInventory, equipMonster, unequipMonster, addBridgeLog, getBridgeLog 
 import { getMintData, getAddressArea, getStarterMonsters, getStarterStatus, insertClaimedAddress, moveAddressTo, insertMonster, insertMonsterEquippedSkills, getBattleResult, getBattleSkillsUsed, insertMonsterUsingBattleId, getBattleResults } from './src/API';
 import _ from 'lodash';
 import { bridgeLog } from './src/Inventory/types';
+import path from 'path';
+import dotenv from 'dotenv';
+dotenv.config({ path: path.join(__dirname, '.env')});
 
 //create app
 const port = 8081;
+const whitelists = JSON.parse(process.env.CORS_WHITELIST!);
 
 let app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -25,7 +29,7 @@ app.use(cors({
 let http = createServer(app);
 let io = new Server(http, {
     cors: {
-        origin: 'http://localhost:3000',
+        origin: whitelists,
         credentials: true
     }
 });
