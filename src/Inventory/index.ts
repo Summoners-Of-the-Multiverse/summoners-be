@@ -141,6 +141,22 @@ export const getInventory = async (chainId: string, address:string) => {
         // only select token_id that recorded in db
         // select mob data & equipped
         const db = new DB();
+
+        // remove missing monsters from equipped
+        const deleteEquippedQuery = `
+            with missing_monsters as (
+                select pm.id as missing_id
+                from player_monsters pm
+                join monsters m
+                on m.id = pm.monster_id
+                where lower(address) = lower('${address}')
+                and   m.token_id not in ('${tokenIds.join("','")}')
+            )
+            delete from player_monsters
+            where id in (select missing_id from missing_monsters)
+        `;
+        await db.executeQuery(deleteEquippedQuery);
+
         const mobQuery = `
             SELECT
                 mob.id,
