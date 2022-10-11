@@ -236,7 +236,7 @@ export const getInventory = async (chainId: string, address:string) => {
 
         return mobRes;
     } catch(e) {
-        console.log(e);
+        // console.log(e);
         return [];
     }
 }
@@ -249,7 +249,7 @@ export const equipMonster = async(chainId: string, address:string, monsterId: nu
         let checkerRes = await db.executeQueryForSingleResult<{count: number}>(checkerQuery);
 
         if(checkerRes && checkerRes.count >= 4) {
-            console.log(`Party full!`);
+            // console.log(`Party full!`);
             return false;
         }
 

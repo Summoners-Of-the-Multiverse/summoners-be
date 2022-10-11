@@ -101,7 +101,6 @@ export class Battle {
             return;
         }
 
-        console.log({event, value});
         this.io.to(this.room).emit(event, value);
     }
 
@@ -116,13 +115,12 @@ export class Battle {
 
     _destroyRoom = () => {
         // disconnect sockets after battle end
-        console.log('destroying room')
         this.io.in(this.room).disconnectSockets();
     }
 
     _listenToPlayerLeave = () => {
         this.client.on('disconnect', () => {
-            console.log('disconnected')
+            //do nothing
         });
     }
 
@@ -311,7 +309,6 @@ export class Battle {
     _getEncounter = async() => {
         let randomMonsterMetadataId = await getRandomAreaMonsterBaseMetadataId(this.areaId, this.chainId);
         if(!randomMonsterMetadataId) {
-            console.log({areaId: this.areaId, chainId: this.chainId})
             throw Error("Unable to get monster metadata");
         }
 

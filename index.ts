@@ -47,11 +47,11 @@ io.on('connection', (socket: Socket) => {
             return;
         }
 
-        console.log('starting battle for ' + socket.id);
+        // console.log('starting battle for ' + socket.id);
         let battle: Battle | null = null;
         let onPromptDelete = () => {
             battle = null;
-            console.log('room destroyed');
+            // console.log('room destroyed');
         };
         try {
             battle = new Battle({io, socket, address, chainId, type: "wild", onPromptDelete});
@@ -125,10 +125,10 @@ app.post('/mint', async function(req, res) {
         if (_.has(insert1, 'id') && _.size(insert2) == 4) {
             // auto equip mint mob
             await equipMonster(req.body.chainId, req.body.address, insert1.id);
-            console.log(`success mint`);
+            // console.log(`success mint`);
             return res.json({ 'success': true });
         }
-        console.log(`failed mint`);
+        // console.log(`failed mint`);
         return res.json({ 'success': false });
     }
 
@@ -152,10 +152,10 @@ app.post('/capture', async function(req, res) {
 
         // got 4 skills and mob inserted
         if (_.has(insert1, 'id') && _.size(insert2) == 4) {
-            console.log(`success mint`);
+            // console.log(`success mint`);
             return res.json({ 'success': true });
         }
-        console.log(`failed mint`);
+        // console.log(`failed mint`);
         return res.json({ 'success': false });
     }
 
