@@ -28,11 +28,11 @@ const sanitizeAddress = (address : string) => {
     address = address.trim();
 
     if (address.length !== ETHEREUM_ADDRESS_LENGTH) {
-        throw Error("Invalid Address");
+        return "";
     }
 
     if (address.substring(0, 2) !== '0x') {
-        throw Error("Invalid Address");
+        return "";
     }
 
     return address;
@@ -42,6 +42,9 @@ export const getStarterStatus = async (address : string) => {
     let db = new DB();
 
     address = sanitizeAddress(address);
+    if(address === "") {
+        throw Error("Invalid Address");
+    }
 
     let query = `SELECT * FROM claimed_addresses WHERE address = '${address}';`;
     let res = await db.executeQueryForResults(query);

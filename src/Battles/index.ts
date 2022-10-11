@@ -55,16 +55,31 @@ export class Battle {
     init = async () => {
         try {
             await this._getChainId();
-            this._joinRoom();
-            this._getEncounter();
-            this._getPlayerMonsters();
-            this._listenToRoomDestruction();
-            this._listenToPlayerLeave();
         }
 
-        catch(e: any) {
-            console.log(e);
+        catch {
+            this.client.emit('invalid_battle', 'Unable to get chain');
         }
+
+        try {
+            await this._getPlayerMonsters();
+        }
+
+        catch {
+            this.client.emit('invalid_battle', 'You have 0 monsters equipped');
+        }
+
+        try {
+            await this._getEncounter();
+        }
+
+        catch {
+            this.client.emit('invalid_battle', 'Unable to track monster');
+        }
+    
+        this._joinRoom();
+        this._listenToRoomDestruction();
+        this._listenToPlayerLeave();
     }
 
     _getChainId = async() => {
@@ -93,7 +108,6 @@ export class Battle {
     //puts client into battle room
     _joinRoom = () => {
         if(this.io.sockets.adapter.rooms.get(this.room)) {
-            this.client.emit('invalid_battle', 'true');
             throw Error("There is an ongoing battle");
         }
 

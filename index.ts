@@ -13,6 +13,11 @@ import path from 'path';
 import dotenv from 'dotenv';
 dotenv.config({ path: path.join(__dirname, '.env')});
 
+process.on('uncaughtException', function (err) {
+    //dont stop on uncaught exception
+    console.log('Caught exception: ', err);
+});
+
 //create app
 const port = 8081;
 const whitelists = JSON.parse(process.env.CORS_WHITELIST!);
@@ -36,7 +41,7 @@ let io = new Server(http, {
 
 //websocket functions
 io.on('connection', (socket: Socket) => {
-    socket.on('start_battle', ({ address, chainId }: StartBattleParams) => {
+    socket.on('start_battle', async({ address, chainId }: StartBattleParams) => {
         if(!address || !chainId ) {
             socket.emit("invalid_battle");
             return;
@@ -50,11 +55,11 @@ io.on('connection', (socket: Socket) => {
         };
         try {
             battle = new Battle({io, socket, address, chainId, type: "wild", onPromptDelete});
-            battle.init();
+            await battle.init();
         }
 
         catch (e){
-            console.log(e);
+            // do nothing
         }
     });
 });
