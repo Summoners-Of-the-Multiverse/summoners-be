@@ -1,5 +1,6 @@
 import { getRandomNumber } from "../../utils";
 import DB from "../DB";
+import { getHolderNft } from "../Inventory";
 import BossMonster from "./BossMonster";
 import PlayerMonster from "./PlayerMonster";
 import WildMonster from "./WildMonster";
@@ -40,6 +41,10 @@ const getRandomAreaMonsterBaseMetadataId = async(area_id: number, chainId: strin
 }
 
 const getPlayerMonsters = async(address: string, chainId: string) => {
+    // get all token from erc721 & linker
+    let data = await getHolderNft(chainId, address);
+    let ownedTokenIds = data.map((x: any) => x.token_id) as string[];
+
     let db = new DB();
 
     //only 4
@@ -47,7 +52,12 @@ const getPlayerMonsters = async(address: string, chainId: string) => {
         SELECT 
             monster_id
         FROM player_monsters pm
-        WHERE LOWER(address) = LOWER('${address}') AND LOWER(chain_id) = LOWER('${chainId}')
+        JOIN monsters m
+        ON m.id = pm.monster_id
+        WHERE 
+            LOWER(address) = LOWER('${address}') 
+            AND LOWER(chain_id) = LOWER('${chainId}')
+            AND token_id IN ('${ownedTokenIds.join("','")}')
         LIMIT 4;
     `);
 
