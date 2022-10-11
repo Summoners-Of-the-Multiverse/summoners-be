@@ -8,14 +8,18 @@ import { seedAreaMonsters, seedAreas, seedEffects, seedElementMultiplier, seedEl
     await seedMonsterMetadata();
     await seedMonsterSkills();
     await seedEffects();
-    await seedMonsters();
     await seedAreas();
     await seedAreaMonsters();
     await seedElements();
     await seedElementMultiplier();
-    await seedMonsterEquippedSkills();
-    // await seedPlayerEquippedMonsters(JSON.parse(process.env.SEED_ADDRESSES!));
-    await seedClaimedAddressAndArea();
+
+    //only seed these if in testnet
+    if(process.env.CHAIN_ENV === 'testnet'){
+        await seedMonsters();
+        await seedMonsterEquippedSkills();
+        await seedPlayerEquippedMonsters(JSON.parse(process.env.SEED_ADDRESSES!));
+        await seedClaimedAddressAndArea();
+    }
 
     console.log('Seed ended, press CTRL / CMD + C');
     return;
