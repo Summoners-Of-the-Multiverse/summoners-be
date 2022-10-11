@@ -21,7 +21,7 @@ let app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors({
-    origin: '*',
+    origin: whitelists,
     credentials: true
 }));
 
@@ -174,7 +174,6 @@ app.get('/area/:address', async function(req, res) {
     }
 
     catch (e){
-        console.log(e)
         return res.status(400).send("Invalid address or location");
     }
 });
