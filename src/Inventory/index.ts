@@ -13,7 +13,7 @@ dotenv.config({
 import _ from "lodash";
 import ContractCall from "../ContractCall";
 import { bridgeLog } from "./types";
-const isTestnet = process.env.CHAIN_ENV === "testnet" ? true : false;
+const isTestnet = process.env.CHAIN_ENV === "testnet";
 
 /**
  * Get wallet's nft (on-chain) - haven't match with db record
