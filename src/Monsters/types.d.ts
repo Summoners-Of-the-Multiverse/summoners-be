@@ -14,17 +14,21 @@ export interface PlayerMonsterConstructor extends BaseMonsterConstructor {
 export interface MonsterConstructor extends BaseMonsterConstructor {
     onLoad: (monster: BossMonster | WildMonster) => void; 
     metadataId: number;
+    areaId: number;
 }
 
 export type Attack = {
     damage: number;
     type: "normal" | "crit" | "immune" | "miss";
+    element_id: number;
 }
 
 export type AttackRes = { 
     attacks: Attack[];
+    cd: number;
     totalDamage: number;
     critDamage: number;
+    crit: number;
     hits: number;
     misses: number;
 }

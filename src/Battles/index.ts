@@ -1,6 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { MonsterEquippedSkillById, MonsterStats, MonsterType } from "../../types/Monster";
 import { getInsertQuery, getUTCDatetime } from "../../utils";
+import { getAddressArea } from "../API";
 import DB from "../DB";
 import { BossMonster, getPlayerMonsters, getRandomAreaMonsterBaseMetadataId, PlayerMonster, WildMonster } from "../Monsters";
 import { BattleConstructor, RoomEvent, SkillUsage } from "./types";
@@ -24,7 +25,7 @@ export class Battle {
     playerMonsters: { [id: number]: PlayerMonster } = {};
     playerMonsterCount: number = 0;
     address: string;
-    areaId: number;
+    areaId: number = 0;
     chainId: string;
     type: MonsterType;
 
@@ -40,29 +41,53 @@ export class Battle {
 
     db = new DB();
 
-    constructor({ io, socket, address, areaId, chainId, type, onPromptDelete }: BattleConstructor) {
+    constructor({ io, socket, address, chainId, type, onPromptDelete }: BattleConstructor) {
         this.io = io;
         this.client = socket;
         this.room = `battle_${address}`;
 
         this.address = address;
-        this.areaId = areaId;
         this.chainId = chainId;
         this.type = type;
         this.onPromptDelete = onPromptDelete;
     }
 
-    init = () => {
+    init = async () => {
         try {
-            this._joinRoom();
-            this._getEncounter();
-            this._getPlayerMonsters();
-            this._listenToRoomDestruction();
+            await this._getChainId();
         }
 
-        catch(e: any) {
-            throw Error(e);
+        catch {
+            this.client.emit('invalid_battle', 'Unable to get chain');
         }
+
+        try {
+            await this._getPlayerMonsters();
+        }
+
+        catch {
+            this.client.emit('invalid_battle', 'You have 0 monsters equipped');
+        }
+
+        try {
+            await this._getEncounter();
+        }
+
+        catch {
+            this.client.emit('invalid_battle', 'Unable to track monster');
+        }
+    
+        this._joinRoom();
+        this._listenToRoomDestruction();
+        this._listenToPlayerLeave();
+    }
+
+    _getChainId = async() => {
+        let chainId = await getAddressArea(this.address);
+        if(!chainId) {
+            throw Error("Invalid Area");
+        }
+        this.areaId = chainId.area_id;
     }
 
     /**
@@ -76,7 +101,6 @@ export class Battle {
             return;
         }
 
-        console.log({event, value});
         this.io.to(this.room).emit(event, value);
     }
 
@@ -90,8 +114,14 @@ export class Battle {
     }
 
     _destroyRoom = () => {
-        console.log('destroying room')
-        this.io.in(this.room).socketsLeave(this.room);
+        // disconnect sockets after battle end
+        this.io.in(this.room).disconnectSockets();
+    }
+
+    _listenToPlayerLeave = () => {
+        this.client.on('disconnect', () => {
+            //do nothing
+        });
     }
 
     /**
@@ -104,11 +134,12 @@ export class Battle {
                 return;
             }
 
-            this.hasLogged = true;
-
             if(room === this.room) {
+                this.hasLogged = true;
+                this.battleEnded = true;
+
                 /** log battle */
-                let columns = ['pve_battle_id', 'skill_id', 'monster_id', 'total_damage_dealt', 'crit_damage_dealt', 'hits', 'misses'];
+                let columns = ['pve_battle_id', 'skill_id', 'monster_id', 'total_damage_dealt', 'crit_damage_dealt', 'hits', 'crits', 'misses', 'total_cooldown'];
                 let values: any[][] = [];
 
                 if(Object.keys(this.skillUsage).length === 0){
@@ -123,7 +154,7 @@ export class Battle {
                     }
 
                     for(const [skillId, stats] of Object.entries(skills)) {
-                        values.push([this.battle_id, skillId, monsterId, stats.damage, stats.crit_damage, stats.hit, stats.miss]);
+                        values.push([this.battle_id, skillId, monsterId, stats.damage, stats.crit_damage, stats.hit, stats.crit, stats.miss, stats.totalCd]);
                     }
                 }
 
@@ -135,6 +166,7 @@ export class Battle {
 
                 let query = getInsertQuery(columns, values, 'pve_battle_player_skills_used');
                 await this.db.executeQuery(query);
+                this.onPromptDelete();
             }
         });
     }
@@ -158,7 +190,7 @@ export class Battle {
                     }
 
                     let attackRes = await playerMonster.attack(this.encounter!, skillId);
-                    let { attacks, hits, misses, totalDamage, critDamage } = attackRes;
+                    let { attacks, hits, misses, crit, totalDamage, critDamage, cd } = attackRes;
 
                     if(attacks.length === 0) {
                         //on cooldown
@@ -175,15 +207,19 @@ export class Battle {
                         this.skillUsage[monsterId][skillId] = {
                             hit: 0,
                             miss: 0,
+                            crit: 0,
                             damage: 0,
                             crit_damage: 0,
+                            totalCd: 0,
                         };
                     }
 
                     this.skillUsage[monsterId][skillId].hit += hits;
                     this.skillUsage[monsterId][skillId].miss += misses;
+                    this.skillUsage[monsterId][skillId].crit += crit;
                     this.skillUsage[monsterId][skillId].damage += totalDamage;
                     this.skillUsage[monsterId][skillId].crit_damage += critDamage;
+                    this.skillUsage[monsterId][skillId].totalCd += cd * 1000; // in ms
 
                     if(this.encounter!.isDead()) {
                         this._sendWinMessage();
@@ -192,6 +228,12 @@ export class Battle {
                     }
 
                     break;
+
+                case "flee":
+                    this._sendLoseMessage();
+                    this.endBattle();
+                    return;
+
                 default:
                     break;
             }
@@ -225,9 +267,9 @@ export class Battle {
         }
 
         // attack random player monster
-        let totalDamage = await this.encounter!.attackPlayer(Object.values(this.playerMonsters));
+        let {totalDamage, cd} = await this.encounter!.attackPlayer(Object.values(this.playerMonsters));
         this.playerCumulativeHp -= totalDamage;
-        this._emitEvent('encounter_hit', {damage: totalDamage, playerHpLeft: this.playerCumulativeHp});
+        this._emitEvent('encounter_hit', {damage: totalDamage, cd, playerHpLeft: this.playerCumulativeHp});
 
         if(this.playerCumulativeHp < 0) {
             this._sendLoseMessage();
@@ -267,16 +309,25 @@ export class Battle {
     _getEncounter = async() => {
         let randomMonsterMetadataId = await getRandomAreaMonsterBaseMetadataId(this.areaId, this.chainId);
         if(!randomMonsterMetadataId) {
-            console.log({areaId: this.areaId, chainId: this.chainId})
             throw Error("Unable to get monster metadata");
         }
 
         switch(this.type) {
             case "boss":
-                this.encounter = new BossMonster({ onOffCooldown: this._onEncounterOffCooldown, onLoad: this._onEncounterLoad, metadataId: randomMonsterMetadataId });
+                this.encounter = new BossMonster({ 
+                    onOffCooldown: this._onEncounterOffCooldown, 
+                    onLoad: this._onEncounterLoad, 
+                    metadataId: randomMonsterMetadataId,
+                    areaId: this.areaId
+                });
                 break;
             case "wild":
-                this.encounter = new WildMonster({ onOffCooldown: this._onEncounterOffCooldown, onLoad: this._onEncounterLoad, metadataId: randomMonsterMetadataId });
+                this.encounter = new WildMonster({ 
+                    onOffCooldown: this._onEncounterOffCooldown, 
+                    onLoad: this._onEncounterLoad, 
+                    metadataId: randomMonsterMetadataId,
+                    areaId: this.areaId
+                });
                 break;
             default:
                 throw Error("Unknown type");
@@ -310,7 +361,8 @@ export class Battle {
         this._emitEvent('battle_start', {
             playerMonsters,
             playerMonsterSkills,
-            encounter: this.encounter!.getStats()
+            encounter: this.encounter!.getStats(),
+            battle_id: this.battle_id,
         });
 
         setTimeout(() => {

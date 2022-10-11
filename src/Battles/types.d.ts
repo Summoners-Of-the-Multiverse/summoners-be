@@ -6,7 +6,6 @@ export type BattleConstructor = {
     io: Server;
     socket: Socket;
     address: string;
-    areaId: number;
     chainId: string;
     type: MonsterType;
 
@@ -24,8 +23,10 @@ export type SkillUsage = {
         [skillId: number]: {
             hit: number;
             miss: number;
+            crit: number;
             damage: number;
             crit_damage: number;
+            totalCd: number;
         }
     }
 }

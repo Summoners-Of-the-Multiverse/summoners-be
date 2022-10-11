@@ -65,6 +65,15 @@ export default class DB {
         return;
     }
 
+    droptable = async() => {
+        const dropQuery = `
+            DROP schema public CASCADE;
+            CREATE schema public;
+        `;
+
+        await this.executeQuery(dropQuery);
+    }
+
     rollback = async() => {
         let rollbackIdQuery = `
             SELECT migration_id FROM migrations
@@ -103,7 +112,7 @@ export default class DB {
                     await this.executeQuery(logQuery);
                     console.log(`Rollbacked ID: ${migration.id}`);
                 }
-    
+
                 else {
                     console.error(`Unable to rollback ID: ${migration.id}`);
                     break;
@@ -139,9 +148,9 @@ export default class DB {
             await client.query(query);
             isSuccess = true;
         }
-    
+
         catch (e){
-            console.log(e);
+            // console.log(e);
         }
 
         finally {
@@ -158,15 +167,15 @@ export default class DB {
             port: this.port,
             database: this.database,
         });
-        
+
         let res = undefined;
         try {
             await client.connect();
             res = await client.query(query);
         }
-    
+
         catch (e){
-            console.log(e);
+            // console.log(e);
         }
 
         finally {

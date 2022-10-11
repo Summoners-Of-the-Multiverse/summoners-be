@@ -2,12 +2,7 @@ import { MonsterEquippedSkillById, MonsterStats } from "../../types/Monster";
 import { cloneObj, getRandomChance, getRandomNumber} from "../../utils";
 import DB from "../DB";
 import PlayerMonster from "./PlayerMonster";
-import { Attack, AttackRes, BaseMonsterConstructor } from "./types";
-
-export const bossMultiplier = 5;
-export const bossHpMultiplier = 50;
-export const wildMultiplier = 2;
-export const wildHpMultiplier = 5;
+import { AttackRes, BaseMonsterConstructor } from "./types";
 
 export default class Base {
 
@@ -33,6 +28,8 @@ export default class Base {
     onOffCooldown;
 
     isOnCooldown = false;
+    statMultiplier = 1;
+    hpMultiplier = 1;
     
     constructor({ onOffCooldown }: BaseMonsterConstructor) {
         this.onOffCooldown = onOffCooldown;
@@ -68,20 +65,13 @@ export default class Base {
      */
     getBaseStats = () => {
         let stats = cloneObj<MonsterStats>(this.stats);
-        switch(stats.type) {
-            case "boss":
-                stats.attack = stats.attack / bossMultiplier;
-                stats.defense = stats.defense / bossMultiplier;
-                stats.hp = stats.hp / (bossMultiplier * bossHpMultiplier);
-                break;
-            case "wild":
-                stats.attack = stats.attack / wildMultiplier;
-                stats.defense = stats.defense / wildMultiplier;
-                stats.hp = stats.hp / (wildMultiplier * wildHpMultiplier);
-                break;
-            default:
-                break;
+
+        if(stats.type !== "player") {
+            stats.attack = stats.attack / this.statMultiplier;
+            stats.defense = stats.defense / this.statMultiplier;
+            stats.hp = stats.hp / (this.hpMultiplier);
         }
+        
         return stats;
     }
 
@@ -90,14 +80,14 @@ export default class Base {
     }
 
     attack = async (target: Base, skillId: string, ignoreDeath = false) => {
-        let attackRes: AttackRes = { attacks: [], totalDamage: 0, critDamage: 0, hits: 0, misses: 0 };
+        let attackRes: AttackRes = { attacks: [], cd: 0, totalDamage: 0, critDamage: 0, hits: 0, crit: 0, misses: 0 };
         if(this.isOnCooldown) {
             return attackRes;
         }
 
         let skill = this.skills[skillId];
         if(!skill) {
-            throw new Error("No skills selected!");
+            throw Error("No skills selected!");
         }
         
         this.isOnCooldown = true;
@@ -106,11 +96,16 @@ export default class Base {
             this.isOnCooldown = false;
             this.onOffCooldown();
         }, skill.cooldown * 1000);
+
+        //set cooldown
+        attackRes.cd = skill.cooldown;
+
         if(target.stats.defense >= this.stats.attack) {
             //no damage
             attackRes.attacks.push({
                 damage: 0,
                 type: "immune",
+                element_id: skill.element_id,
             });
             return attackRes;
         }
@@ -126,6 +121,7 @@ export default class Base {
                 attackRes.attacks.push({
                     damage,
                     type: "miss",
+                    element_id: skill.element_id,
                 });
                 attackRes.misses++;
                 continue;
@@ -137,10 +133,12 @@ export default class Base {
             attackRes.attacks.push({
                 damage,
                 type: isCrit? "crit" : "normal",
+                element_id: skill.element_id,
             });
             attackRes.hits++;
             attackRes.totalDamage += damage;
             attackRes.critDamage += isCrit? damage : 0;
+            attackRes.crit += isCrit? 1 : 0;
 
             target.receiveDamage(damage);
 
@@ -176,15 +174,17 @@ export default class Base {
      */
     attackPlayer = async(playerMonsters: PlayerMonster[]) => {
         if(this.isDead()) {
-            return 0;
+            return { totalDamage: 0, cd: 0 };
         }
-        let skillIndex = getRandomNumber(1, Object.keys(this.skills).length - 1, true);
-        let playerMonsterIndex = getRandomNumber(1, playerMonsters.length - 1, true);
+        
+        let skillIndex = getRandomNumber(0, Object.keys(this.skills).length - 1, true);
+        let playerMonsterIndex = getRandomNumber(0, playerMonsters.length - 1, true);
+        
         let target = playerMonsters[playerMonsterIndex];
         let skillId = Object.keys(this.skills)[skillIndex];
         
         let attackRes: AttackRes = await this.attack(target, skillId, true);
-        return attackRes.totalDamage;
+        return { totalDamage: attackRes.totalDamage, cd: attackRes.cd };
     }
 
     //mainly used for bosses and wild encounters

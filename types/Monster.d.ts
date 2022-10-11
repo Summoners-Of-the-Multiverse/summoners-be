@@ -113,6 +113,7 @@ export type MonsterEquippedSkill = {
     cooldown: number;
     multiplier: number;
     effect_file: string;
+    icon_file: string;
 }
 
 export type MonsterEquippedSkillById = {
@@ -127,6 +128,7 @@ export type MonsterEquippedSkillById = {
         cooldown: number;
         multiplier: number;
         effect_file: string;
+        icon_file: string;
     }
 }
 

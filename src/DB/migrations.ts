@@ -4,8 +4,8 @@ export default [
         query: `
             CREATE TABLE migrations (
                 id serial PRIMARY KEY,
-                migration_id int UNIQUE not null, 
-                migration_group int not null, 
+                migration_id int UNIQUE not null,
+                migration_group int not null,
                 migrated_at timestamp not null
             );`,
         rollback_query: `DROP TABLE migrations;`
@@ -14,10 +14,10 @@ export default [
         id: 2,
         query: `
             CREATE TABLE monster_base_metadata (
-                id serial PRIMARY KEY, 
-                chain_id varchar(50) not null, 
+                id serial PRIMARY KEY,
+                chain_id varchar(50) not null,
                 element_id int not null,
-                name text not null, 
+                name text not null,
                 img_file text not null,
                 shiny_img_file text not null,
                 shiny_chance real not null default 0.1 check (shiny_chance >= 0),
@@ -38,13 +38,13 @@ export default [
         id: 3,
         query: `
             CREATE TABLE monster_skills (
-                id serial PRIMARY KEY, 
-                element_id int not null, 
-                effect_id int not null, 
-                name varchar(255) not null, 
+                id serial PRIMARY KEY,
+                element_id int not null,
+                effect_id int not null,
+                name varchar(255) not null,
                 hits int not null default 1 check(hits >= 1),
-                accuracy real not null default 95 check(accuracy >= 0), 
-                cooldown real not null default 5 check(cooldown >= 0), 
+                accuracy real not null default 95 check(accuracy >= 0),
+                cooldown real not null default 5 check(cooldown >= 0),
                 multiplier real not null default 1 check(multiplier >= 0)
             );`,
         rollback_query: `DROP TABLE monster_skills;`
@@ -53,7 +53,7 @@ export default [
         id: 4,
         query: `
             CREATE TABLE monster_skill_effects (
-                id serial PRIMARY KEY, 
+                id serial PRIMARY KEY,
                 asset_file varchar(255)
             );`,
         rollback_query: `DROP TABLE monster_skill_effects;`
@@ -62,7 +62,7 @@ export default [
         id: 5,
         query: `
             CREATE TABLE elements (
-                id serial PRIMARY KEY, 
+                id serial PRIMARY KEY,
                 name varchar(50) not null,
                 icon_file varchar(50) not null
             );`,
@@ -72,12 +72,12 @@ export default [
         id: 6,
         query: `
             CREATE TABLE monsters (
-                id serial PRIMARY KEY, 
-                monster_base_metadata_id int not null, 
-                token_id varchar(50) not null, 
-                attack real not null check (attack >= 0), 
-                defense real not null check (defense >= 0), 
-                hp real not null check (hp >= 0), 
+                id serial PRIMARY KEY,
+                monster_base_metadata_id int not null,
+                token_id varchar(50) not null,
+                attack real not null check (attack >= 0),
+                defense real not null check (defense >= 0),
+                hp real not null check (hp >= 0),
                 crit_chance real not null default 0 check (crit_chance >= 0),
                 crit_multiplier real not null default 0 check (crit_multiplier >= 1),
                 is_shiny boolean not null default false
@@ -93,7 +93,7 @@ export default [
         id: 8,
         query: `
             CREATE TABLE areas (
-                id serial PRIMARY KEY, 
+                id serial PRIMARY KEY,
                 name varchar(255) not null
             );`,
         rollback_query: `DROP TABLE areas;`
@@ -102,8 +102,8 @@ export default [
         id: 9,
         query: `
             CREATE TABLE area_monsters (
-                id serial PRIMARY KEY, 
-                monster_base_metadata_id int not null, 
+                id serial PRIMARY KEY,
+                monster_base_metadata_id int not null,
                 area_id int not null,
                 stat_modifier real not null default 1
             );`,
@@ -113,8 +113,8 @@ export default [
         id: 10,
         query: `
             CREATE TABLE element_multipliers (
-                id serial PRIMARY KEY, 
-                element_id int not null, 
+                id serial PRIMARY KEY,
+                element_id int not null,
                 target_element_id int not null,
                 multiplier real not null default 1
             );`,
@@ -126,8 +126,8 @@ export default [
         id: 11,
         query: `
             CREATE TABLE player_monsters (
-                id serial PRIMARY KEY, 
-                address varchar(50) not null, 
+                id serial PRIMARY KEY,
+                address varchar(50) not null,
                 monster_id int not null
             );`,
         rollback_query: `DROP TABLE player_monsters;`
@@ -141,7 +141,7 @@ export default [
         id: 13,
         query: `
             CREATE TABLE monster_equipped_skills (
-                id serial PRIMARY KEY, 
+                id serial PRIMARY KEY,
                 monster_id int not null,
                 monster_skill_id int not null
             );`,
@@ -156,7 +156,7 @@ export default [
         id: 15,
         query: `
             CREATE TABLE pve_battles (
-                id serial PRIMARY KEY, 
+                id serial PRIMARY KEY,
                 address varchar(50) not null,
                 status smallint not null default 0,
                 time_start timestamp not null,
@@ -173,7 +173,7 @@ export default [
         id: 17,
         query: `
             CREATE TABLE pve_battle_encounters (
-                id serial PRIMARY KEY, 
+                id serial PRIMARY KEY,
                 type smallint not null,
                 pve_battle_id int not null,
                 monster_base_metadata_id int not null,
@@ -205,7 +205,7 @@ export default [
         id: 19,
         query: `
             CREATE TABLE pve_battle_player_skills_used (
-                id serial PRIMARY KEY, 
+                id serial PRIMARY KEY,
                 pve_battle_id int not null,
                 skill_id int not null,
                 monster_id int not null,
@@ -234,4 +234,110 @@ export default [
         query: `ALTER TABLE player_monsters ADD chain_id varchar(50) not null default '';`,
         rollback_query: `ALTER TABLE player_monsters DROP COLUMN chain_id;`
     },
+    {
+        id: 22,
+        query: `
+            CREATE TABLE claimed_addresses (
+                id serial PRIMARY KEY,
+                address varchar(50) not null
+            );`,
+        rollback_query: `DROP TABLE claimed_addresses;`
+    },
+    {
+        id: 23,
+        query: `
+            CREATE TABLE player_locations (
+                id serial PRIMARY KEY,
+                address varchar(50) not null,
+                area_id int not null default 1
+            );`,
+        rollback_query: `DROP TABLE player_locations;`
+    },
+    {
+        id: 24,
+        query: `
+            ALTER TABLE monster_skills ADD icon_file text not null default ''`,
+        rollback_query: `ALTER TABLE monster_skills DROP COLUMN icon_file;`
+    },
+    {
+        id: 25,
+        query: `ALTER TABLE monsters ADD hash varchar(32) NOT NULL default ''`,
+        rollback_query: `ALTER TABLE monsters DROP COLUMN hash;`
+    },
+    {
+        id: 26,
+        query: `CREATE UNIQUE INDEX monsters_hash_idx ON monsters (hash);`,
+        rollback_query: `DROP INDEX monsters_hash_idx;`
+    },
+    {
+        id: 27,
+        query: `DROP INDEX monsters_token_id_idx;`,
+        rollback_query: `CREATE INDEX monsters_token_id_idx ON monsters (token_id);`
+    },
+    {
+        id: 28,
+        query: `CREATE UNIQUE INDEX monsters_unique_token_id_idx ON monsters (token_id);`,
+        rollback_query: `DROP INDEX monsters_unique_token_id_idx;`
+    },
+    {
+        id: 29,
+        query: `ALTER TABLE monsters ADD created_at timestamp default current_timestamp`,
+        rollback_query: `ALTER TABLE monsters DROP COLUMN created_at;`
+    },
+    {
+        id: 30,
+        query: `ALTER TABLE claimed_addresses ADD created_at timestamp default current_timestamp`,
+        rollback_query: `ALTER TABLE claimed_addresses DROP COLUMN created_at;`
+    },
+    {
+        id: 31,
+        query: `ALTER TABLE monster_equipped_skills ADD created_at timestamp default current_timestamp`,
+        rollback_query: `ALTER TABLE monster_equipped_skills DROP COLUMN created_at;`
+    },
+    {
+        id: 32,
+        query: `ALTER TABLE pve_battle_player_skills_used ADD crits int default 0;
+                ALTER TABLE pve_battle_player_skills_used ADD total_cooldown int default 0;`,
+        rollback_query: `ALTER TABLE pve_battle_player_skills_used DROP COLUMN crits;
+                         ALTER TABLE pve_battle_player_skills_used DROP COLUMN total_cooldown;`
+    },
+    {
+        id: 33,
+        query: `ALTER TABLE player_monsters ADD created_at timestamp default current_timestamp`,
+        rollback_query: `ALTER TABLE player_monsters DROP COLUMN created_at;`
+    },
+    {
+        id: 34,
+        query: `
+            CREATE TABLE monster_bridge_log (
+                id serial PRIMARY KEY,
+                monster_id int not null,
+                token_id varchar(50) not null,
+                address varchar(50) not null,
+                from_chain_id varchar(50) not null,
+                to_chain_id varchar(50) not null,
+                tx_hash varchar(100) not null,
+                status smallint not null default 0,
+                created_at timestamp default current_timestamp,
+                updated_at timestamp
+            );`,
+        rollback_query: `DROP TABLE monster_bridge_log;`
+    },
+    {
+        id: 35,
+        query: `
+            CREATE INDEX monster_bridge_log_monster_id ON monster_bridge_log (monster_id);
+            CREATE INDEX monster_bridge_log_token_id ON monster_bridge_log (token_id);
+            CREATE INDEX monster_bridge_log_to_chain_id ON monster_bridge_log (to_chain_id);
+            CREATE INDEX monster_bridge_log_status ON monster_bridge_log (status);
+            CREATE INDEX monster_bridge_log_address ON monster_bridge_log (address);
+        `,
+        rollback_query: `
+            DROP INDEX monster_bridge_log_monster_id;
+            DROP INDEX monster_bridge_log_token_id;
+            DROP INDEX monster_bridge_log_to_chain_id;
+            DROP INDEX monster_bridge_log_status;
+            DROP INDEX monster_bridge_log_address;
+        `
+    }
 ]
