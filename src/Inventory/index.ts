@@ -248,7 +248,14 @@ export const equipMonster = async(chainId: string, address:string, monsterId: nu
         let checkerQuery = `SELECT COUNT(*) as count FROM ${table} WHERE chain_id = '${chainId}' AND address = '${address}'`;
         let checkerRes = await db.executeQueryForSingleResult<{count: number}>(checkerQuery);
 
-        if(checkerRes && checkerRes.count >= 4) {
+        // check if mob in bridging state
+        let checkBridgingQuery = `SELECT COUNT(id) as count FROM monster_bridge_log WHERE monster_id = ${monsterId} AND address = '${address}' AND status = 0;`
+        let checkBridgingRes = await db.executeQueryForSingleResult<{count: number}>(checkBridgingQuery);
+
+        if(
+            (checkerRes && checkerRes.count >= 4) ||
+            (checkBridgingRes && checkBridgingRes.count > 0)
+        ) {
             // console.log(`Party full!`);
             return false;
         }
