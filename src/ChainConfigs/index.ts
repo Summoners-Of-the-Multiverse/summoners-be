@@ -69,6 +69,8 @@ export const BSC: ChainConfig = {
         symbol: 'BNB',
     },
     blockExplorerUrl: 'https://bscscan.com',
+    linkerContract: '0xe571D5Cd76De9a27dc6ca2Ba60369192B1316640',
+    nftContract: '0x0Ad8DF5ADc21e8Ad55Fd562B3d1dF47b1D93B2bF'
 };
 export const AVAX: ChainConfig = {
     name: 'Avalanche C-Chain',
@@ -93,6 +95,8 @@ export const POLYGON: ChainConfig = {
         symbol: 'MATIC',
     },
     blockExplorerUrl: 'https://polygonscan.com',
+    linkerContract: '0xe571D5Cd76De9a27dc6ca2Ba60369192B1316640',
+    nftContract: '0xd1bEb88f97fFbB768399265e36Fa33a7599fd848'
 };
 export const ARB: ChainConfig = {
     name: 'Arbitrum One',

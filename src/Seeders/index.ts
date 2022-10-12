@@ -1,4 +1,4 @@
-import { AVAX_TEST, BSC_TEST, POLYGON_TEST } from '../ChainConfigs';
+import { BSC, POLYGON, BSC_TEST, POLYGON_TEST } from '../ChainConfigs';
 import monsterFile from '../../assets/sprites/_monster_sprite_files.json';
 import effectFile from '../../assets/effects/_effect_files.json';
 import skillIconsFile from '../../assets/skills/_skill_icon_files.json';
@@ -12,6 +12,7 @@ import path from 'path';
 dotenv.config({ path: path.join(__dirname, '.env')});
 import { MonsterBaseMetadata } from '../API/types';
 
+const isTestnet = process.env.CHAIN_ENV === "testnet"
 const SEED_MONSTER_COUNT = 100;
 const SEED_EQUIPPED_SKILL_COUNT = 4;
 
@@ -76,11 +77,11 @@ export const seedMonsterMetadata = async() => {
     ];
     let values: any[][] = [];
     let nMonsters = monsterFile.file_names.length;
-    const chainIds = [BSC_TEST.id, POLYGON_TEST.id, AVAX_TEST.id]
+    const chainIds = isTestnet ? [BSC_TEST.id, POLYGON_TEST.id] : [BSC.id, POLYGON.id];
 
     for(let elementId = 1; elementId <= 4; elementId++) {
         for(let i = 0; i < nMonsters; i++) {
-            let chainId = chainIds[i%3];
+            let chainId = chainIds[i%chainIds.length];
             let {name, file} = monsterFile.file_names[i];
 
             //currently unused
@@ -340,7 +341,7 @@ export const seedAreaMonsters = async() => {
         return;
     }
 
-    let chains = [BSC_TEST.id, POLYGON_TEST.id, AVAX_TEST.id];
+    let chains = isTestnet ? [BSC_TEST.id, POLYGON_TEST.id] : [BSC.id, POLYGON.id] ;
 
     for(let chain of chains) {
         let monstersQuery = `select * from monster_base_metadata where chain_id = '${chain}' order by max_hp, max_attack, max_defense`;
@@ -466,7 +467,7 @@ export const seedPlayerEquippedMonsters = async(addresses: string[]) => {
     }
     let columns = ['address', 'monster_id', 'chain_id'];
     let values: any[][] = [];
-    let chains = [BSC_TEST.id, POLYGON_TEST.id, AVAX_TEST.id];
+    let chains = isTestnet ? [BSC_TEST.id, POLYGON_TEST.id] : [BSC.id, POLYGON.id] ;
 
     let monsterIds: number[] = [];
 
