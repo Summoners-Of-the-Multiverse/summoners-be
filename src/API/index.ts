@@ -20,6 +20,8 @@ dotenv.config({
 import _ from "lodash";
 import ContractCall from '../ContractCall';
 import effectFile from '../../assets/effects/_effect_files.json';
+import { getHolderNft } from "../Inventory";
+const isTestnet = process.env.CHAIN_ENV === "testnet";
 
 const ETHEREUM_ADDRESS_LENGTH = 42;
 
@@ -61,7 +63,7 @@ export const getStarterMonsters = async (chainId : string) => {
 
     let query = `
                     with starter_ids AS (
-                        select chain_id, element_id, min(id) + element_id as monster_metadata_id
+                        select chain_id, element_id, min(id) + (3 * floor(min(id) / 100)) as monster_metadata_id
                         from monster_base_metadata
                         group by chain_id, element_id
                     )
@@ -457,4 +459,60 @@ export const getBattleSkillsUsed = async(battleId: string) => {
                 `;
     let res = await db.executeQueryForResults<BattleSkillsUsed>(query);
     return res ?? [];
+}
+
+export const getPlayerMonsterTokenDetailsInChain = async(chainId: string, address: string) => {
+    // get all token id (without pagination for now)
+    // get all token from erc721 & linker
+    let data = await getHolderNft(chainId, address);
+    // const polygon = await getHolderNft('0x13881', address);
+
+    // handle empty result
+    if (_.isEmpty(data)) {
+        return data;
+    }
+
+    const tokenIds = _.map(data, 'token_id');
+
+    // https://github.com/ethers-io/ethers.js/issues/892
+    // get token origin id (to detect cross chain token)
+    // batch get original token id to search in db
+    // const chain: any = _.find(chains, {id: chainId});
+    const etherCall = new ContractCall(chainId);
+    const tokensOrigin = await etherCall.checkBulkTokenOrigin(tokenIds);
+
+    // map curr token id with origin token id (before bridge)
+    let tokenMapping: {[key: string]: string} = {};
+    let tokenOriginChain: {[key: string]: string} = {};
+    // store token id without quote (for update monster_bridge_log)
+    let tokenIdsRaw: string[] = [];
+
+    // take token id only and form where query string
+    let tokenIdsString = await Promise.all(
+        _.map(tokensOrigin, async(tk, tkIndex) => {
+            // map curr token <-> origin token
+            const currId = tokenIds[tkIndex];
+
+            switch (tk[0]) {
+                case 'Polygon':
+                    tokenOriginChain[tk[1].toString()] = isTestnet ? chains.POLYGON_TEST.id : chains.POLYGON.id;
+                    break;
+                case 'BNB Chain':
+                    tokenOriginChain[tk[1].toString()] = isTestnet ? chains.BSC_TEST.id : chains.BSC.id;
+                    break;
+                case 'Avalanche':
+                    tokenOriginChain[tk[1].toString()] = isTestnet ? chains.AVAX_TEST.id : chains.AVAX.id;
+                    break;
+                default:
+                    break;
+            }
+            tokenMapping[tk[1].toString()] = currId;
+            // const tokenOrigin = await etherCall.checkTokenOrigin(tk);
+            // console.log(tokenOrigin);
+            tokenIdsRaw.push(tk[1].toString());
+            return `'${tk[1].toString()}'`;
+        })
+    );
+
+    return {tokenIdsRaw, tokenIdsString, tokenMapping, tokenOriginChain};
 }
