@@ -11,9 +11,8 @@ dotenv.config({
     path: path.join(__dirname, '../../.env')
 });
 import _ from "lodash";
-import ContractCall from "../ContractCall";
 import { bridgeLog } from "./types";
-const isTestnet = process.env.CHAIN_ENV === "testnet";
+import { getPlayerMonsterTokenDetailsInChain } from "../API";
 
 /**
  * Get wallet's nft (on-chain) - haven't match with db record
@@ -83,57 +82,7 @@ const isTestnet = process.env.CHAIN_ENV === "testnet";
 
 export const getInventory = async (chainId: string, address:string) => {
     try {
-        // get all token id (without pagination for now)
-        // get all token from erc721 & linker
-        let data = await getHolderNft(chainId, address);
-        // const polygon = await getHolderNft('0x13881', address);
-
-        // handle empty result
-        if (_.isEmpty(data)) {
-            return data;
-        }
-
-        const tokenIds = _.map(data, 'token_id');
-
-        // https://github.com/ethers-io/ethers.js/issues/892
-        // get token origin id (to detect cross chain token)
-        // batch get original token id to search in db
-        // const chain: any = _.find(chains, {id: chainId});
-        const etherCall = new ContractCall(chainId);
-        const tokensOrigin = await etherCall.checkBulkTokenOrigin(tokenIds);
-
-        // map curr token id with origin token id (before bridge)
-        let tokenMapping: {[key: string]: string} = {};
-        let tokenOriginChain: {[key: string]: string} = {};
-        // store token id without quote (for update monster_bridge_log)
-        let tokenIdsRaw: string[] = [];
-
-        // take token id only and form where query string
-        let tokenIdsString = await Promise.all(
-            _.map(tokensOrigin, async(tk, tkIndex) => {
-                // map curr token <-> origin token
-                const currId = tokenIds[tkIndex];
-
-                switch (tk[0]) {
-                    case 'Polygon':
-                        tokenOriginChain[tk[1].toString()] = isTestnet ? chains.POLYGON_TEST.id : chains.POLYGON.id;
-                        break;
-                    case 'BNB Chain':
-                        tokenOriginChain[tk[1].toString()] = isTestnet ? chains.BSC_TEST.id : chains.BSC.id;
-                        break;
-                    case 'Avalanche':
-                        tokenOriginChain[tk[1].toString()] = isTestnet ? chains.AVAX_TEST.id : chains.AVAX.id;
-                        break;
-                    default:
-                        break;
-                }
-                tokenMapping[tk[1].toString()] = currId;
-                // const tokenOrigin = await etherCall.checkTokenOrigin(tk);
-                // console.log(tokenOrigin);
-                tokenIdsRaw.push(tk[1].toString());
-                return `'${tk[1].toString()}'`;
-            })
-        );
+        let {tokenIdsRaw, tokenIdsString, tokenMapping, tokenOriginChain} = await getPlayerMonsterTokenDetailsInChain(chainId, address);  
 
         // update those bridged record if they found in this chain
         updateBridgeLog(tokenIdsRaw, chainId);
