@@ -34,12 +34,12 @@ const MAX_CRIT_MULTIPLIER = 10;
 
 //skills
 const MIN_HITS = 2;
-const MAX_HITS = 8;
-const MIN_CD = 5;
-const MAX_CD = 10;
+const MAX_HITS = 10;
+const MIN_CD = 2;
+const MAX_CD = 5;
 const MIN_ACCURACY = 80;
 const MAX_ACCURACY = 100;
-const MIN_SKILL_MULTIPLIER = 0.25;
+const MIN_SKILL_MULTIPLIER = 0.5;
 const MAX_SKILL_MULTIPLIER = 5;
 
 //areas
@@ -340,7 +340,7 @@ export const seedAreaMonsters = async() => {
         return;
     }
 
-    let chains = [BSC_TEST.id, POLYGON_TEST.id];
+    let chains = [BSC_TEST.id, POLYGON_TEST.id, AVAX_TEST.id];
 
     for(let chain of chains) {
         let monstersQuery = `select * from monster_base_metadata where chain_id = '${chain}' order by max_hp, max_attack, max_defense`;
