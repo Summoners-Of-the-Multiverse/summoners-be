@@ -66,7 +66,7 @@ export class Battle {
         }
 
         catch {
-            this.client.emit('invalid_battle', 'You have 0 monsters equipped');
+            this.client.emit('invalid_battle', 'You have 0 guardians in party');
         }
 
         try {
