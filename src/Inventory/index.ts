@@ -82,7 +82,7 @@ import { getPlayerMonsterTokenDetailsInChain } from "../API";
 
 export const getInventory = async (chainId: string, address:string) => {
     try {
-        let {tokenIdsRaw, tokenIdsString, tokenMapping, tokenOriginChain} = await getPlayerMonsterTokenDetailsInChain(chainId, address);  
+        let {tokenIdsRaw, tokenIdsString, tokenMapping, tokenOriginChain} = await getPlayerMonsterTokenDetailsInChain(chainId, address);
 
         // update those bridged record if they found in this chain
         updateBridgeLog(tokenIdsRaw, chainId);
@@ -264,9 +264,13 @@ export const getBridgeLog = async(address:string, offset=0, limit=5) => {
 export const updateBridgeLog = async(tokenIds: string[], chainId: string) => {
     let db = new DB();
     let query = '';
-    for (let token of tokenIds) {
-        query += `UPDATE monster_bridge_log SET status = 1, updated_at = CURRENT_TIMESTAMP WHERE token_id = '${token}' AND to_chain_id = '${chainId}' AND status = 0;`
+    if (tokenIds) {
+        for (let token of tokenIds) {
+            query += `UPDATE monster_bridge_log SET status = 1, updated_at = CURRENT_TIMESTAMP WHERE token_id = '${token}' AND to_chain_id = '${chainId}' AND status = 0;`
+        }
+        const result = await db.executeQuery(query);
+        return true;
     }
-    const result = await db.executeQuery(query);
-    return true;
+
+    return false;
 }
