@@ -3,9 +3,9 @@ import { getRandomChance, getRandomNumber } from "../../utils";
 import Base from "./Base";
 import { MonsterConstructor } from "./types";
 
-const statMultiplier = 1.2;
-const hpMultiplier = 1.1;
-const areaMultiplier = 0.67;
+const statMultiplier = 1.015;
+const hpMultiplier = 1.05;
+const areaMultiplier = 1.05;
 
 export default class WildMonster extends Base {
 
