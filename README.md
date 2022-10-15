@@ -21,14 +21,24 @@
 ## .env Configuration Example
 
 DB_USER=your username
+
 DB_PASSWORD=your password
+
 DB_HOST=localhost
+
 DB_PORT=5432
+
 DB_NAME=summoners
 
+
 SEED_ADDRESSES=["0x123456789..."]
+
 MORALIS=your moralis api key
+
 PRIVATE_KEY=a random address's private key (needed for querying, please use an empty wallet)
+
 CHAIN_ENV="testnet" or "production"
+
+
 
 CORS_WHITELIST=["http://localhost:3000"]
